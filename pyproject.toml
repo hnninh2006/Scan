@@ -3,7 +3,7 @@ name = "land-scanner-app"
 version = "1.0.0"
 description = "Phan mem Scan Ho so Dat dai va Xuat PDF"
 dependencies = [
-    "flet==0.27.6",
+    "flet==0.28.3",
     "numpy>=1.24.0",
     "Pillow>=10.0.0"
 ]
