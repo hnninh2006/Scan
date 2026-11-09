@@ -3,33 +3,33 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Scan Hồ Sơ"><meta name="theme-color" content="#1565c0">
-<title>Scan Hồ Sơ Đất Đai</title>
+<title>Scan Hồ Sơ Đất Đai (Chuẩn A4/A3)</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font:15px system-ui,sans-serif;padding:max(12px,env(safe-area-inset-top)) 12px max(16px,env(safe-area-inset-bottom));max-width:520px;margin:auto;color:#222;user-select:none;-webkit-user-select:none}
 header{display:flex;justify-content:space-between;align-items:center;background:#e3f2fd;border-radius:8px;padding:10px;gap:8px}
-#box{position:relative;height:310px;margin:10px 0;background:#1e1e1e;border:1px solid #bbb;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:6px;text-align:center;color:#ccc;overflow:hidden;touch-action:none}
+#box{position:relative;height:320px;margin:10px 0;background:#1a1a1a;border:1px solid #bbb;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:6px;text-align:center;color:#ccc;overflow:hidden;touch-action:none}
 #pv{max-width:100%;max-height:100%;border-radius:4px}
-#loupe{position:absolute;top:8px;left:8px;width:96px;height:96px;border:2.5px solid #00e676;border-radius:50%;box-shadow:0 4px 12px #0009;pointer-events:none;background:#000}
+#loupe{position:absolute;top:8px;left:8px;width:100px;height:100px;border:2.5px solid #00e676;border-radius:50%;box-shadow:0 4px 12px #0009;pointer-events:none;background:#000}
 .row{display:flex;gap:8px;margin:8px 0;align-items:center;flex-wrap:wrap}.row>button{flex:1}
 button,select{font:inherit;padding:11px 10px;border-radius:8px;border:1px solid #1565c0;background:#fff;color:#1565c0;cursor:pointer}
 button:disabled{opacity:.45;cursor:default}.pri{background:#1976d2;color:#fff}.ok{background:#2e7d32;color:#fff;border-color:#2e7d32}.warn{background:#ef6c00;color:#fff;border-color:#ef6c00}.pdf{background:#c62828;color:#fff;border-color:#c62828;width:100%;padding:15px;font-weight:700}
 #gal{display:flex;gap:8px;overflow-x:auto;background:#f5f5f5;padding:6px;border-radius:8px;min-height:60px}
 .card{flex:none;background:#fff;border:1px solid #ddd;border-radius:6px;padding:4px;text-align:center}.card img{width:75px;height:75px;object-fit:cover;display:block;margin:2px 0}.card button{padding:4px 8px}
-#modal{position:fixed;inset:0;background:#0007;display:flex;align-items:flex-end;justify-content:center;z-index:5}#modal[hidden],#toast[hidden],#res[hidden],#loupe[hidden],#pv[hidden],#hint[hidden]{display:none}
+#modal{position:fixed;inset:0;background:#0007;display:flex;align-items:flex-end;justify-content:center;z-index:5}#modal[hidden],#toast[hidden],#res[hidden],#loupe[hidden],#pv[hidden],#hint[hidden],#badge[hidden]{display:none}
 .sheet{background:#fff;width:100%;max-width:520px;border-radius:14px 14px 0 0;padding:16px 16px max(16px,env(safe-area-inset-bottom))}
-.sheet label{display:block;margin:8px 0;font-size:13px}.sheet input{width:100%;font:inherit;padding:10px;margin-top:3px;border:1px solid #999;border-radius:6px}
+.sheet label{display:block;margin:8px 0;font-size:13px}.sheet input,.sheet select{width:100%;font:inherit;padding:10px;margin-top:3px;border:1px solid #999;border-radius:6px}
 #toast{position:fixed;left:12px;right:12px;bottom:max(16px,env(safe-area-inset-bottom));background:#2e7d32;color:#fff;padding:12px;border-radius:8px;z-index:9;text-align:center;box-shadow:0 4px 12px #0004}
-.badge{position:absolute;bottom:8px;right:8px;background:#000a;color:#00e676;font-size:12px;padding:4px 8px;border-radius:6px;pointer-events:none}
+.badge{position:absolute;bottom:8px;right:8px;background:#000b;color:#00e676;font-size:12px;padding:4px 9px;border-radius:6px;pointer-events:none}
 </style></head><body>
-<header><b>📄 SCAN HỒ SƠ ĐẤT ĐAI</b><b id="cnt"></b></header>
+<header><b>📄 SCAN HỒ SƠ ĐẤT ĐAI (A4/A3)</b><b id="cnt"></b></header>
 <div id="box">
   <canvas id="pv" hidden></canvas>
-  <canvas id="loupe" width="96" height="96" hidden></canvas>
+  <canvas id="loupe" width="100" height="100" hidden></canvas>
   <span id="badge" class="badge" hidden></span>
-  <span id="hint">Nhấn [CHỤP ẢNH] để quét trang hồ sơ</span>
+  <span id="hint">Nhấn [CHỤP ẢNH] để quét trang hồ sơ A4 / A3</span>
 </div>
 <div class="row">
-  <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="crop" checked> Tự cắt mép</label>
+  <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="crop" checked> Tự cắt A4/A3</label>
   <button id="editQ" disabled style="flex:0;padding:11px 10px" title="Chỉnh tay 4 góc giấy">📐 Góc</button>
   <select id="mode" style="flex:1"><option value="color">Màu (Rõ dấu)</option><option value="bw">Đen trắng</option></select>
   <button id="rot" disabled style="flex:0">⟳ 90°</button>
@@ -45,12 +45,14 @@ button:disabled{opacity:.45;cursor:default}.pri{background:#1976d2;color:#fff}.o
 <label>Mã hồ sơ<input id="f_ma"></label>
 <label>Số tờ bản đồ (*)<input id="f_to" inputmode="numeric" placeholder="Ví dụ: 12"></label>
 <label>Số thứ tự thửa đất (*)<input id="f_thua" inputmode="numeric" placeholder="Ví dụ: 35"></label>
+<label>Khổ giấy xuất PDF<select id="f_paper"><option value="A4">Chuẩn A4 (210 × 297 mm)</option><option value="A3">Chuẩn A3 (297 × 420 mm)</option></select></label>
 <p style="font-size:13px">Tên file PDF sẽ tạo:<br><b id="fn" style="color:#1565c0"></b></p>
 <div id="res" class="row" hidden><button class="pri" id="share">Chia sẻ (Zalo…)</button><button id="dl">Tải xuống</button></div>
 <div class="row"><button id="close">Quay lại</button><button class="pdf" id="go" style="flex:2;width:auto">XUẤT FILE PDF</button></div></div></div>
 <div id="toast" hidden></div>
 <script>
 const $=s=>document.querySelector(s),mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
+const ISO_RATIO=Math.SQRT2; // Hằng số vàng của cả giấy A4 và A3: √2 ≈ 1.41421356
 const MAXL=2200,toast=m=>{const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2600)};
 let S={ma:'26784',to:'',thua:'',pages:[]},raw=null,proc=null,rot=0,retake=null,urls=[],pdf=null;
 let curQuad=null,isAutoQuad=false,editingQuad=false,dragIdx=-1;
@@ -60,7 +62,7 @@ const db=new Promise((ok,no)=>{const r=indexedDB.open('landscan',1);r.onupgraden
 const kv=async(mode,fn)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction('kv',mode),q=fn(t.objectStore('kv'));t.oncomplete=()=>ok(q&&q.result);t.onerror=()=>no(t.error)})};
 const save=()=>kv('readwrite',s=>s.put(S,'s')).catch(()=>toast('Không lưu được dữ liệu cục bộ'));
 
-// ---- 2. CÁC HÀM TOÁN HỌC & XỬ LÝ ẢNH CƠ SỞ
+// ---- 2. TOÁN HỌC HÌNH HỌC PHỐI CẢNH A4/A3 & XỬ LÝ ẢNH CƠ SỞ
 const copy=c=>{const o=mk(c.width,c.height);o.getContext('2d').drawImage(c,0,0);return o};
 const rot90=c=>{const o=mk(c.height,c.width),x=o.getContext('2d');x.translate(o.width,0);x.rotate(Math.PI/2);x.drawImage(c,0,0);return o};
 const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
@@ -75,12 +77,7 @@ function blur(a,w,h,r){
   return o;
 }
 
-// Đóng hình thái học (Morphological Closing = Dilate -> Erode): Xóa chữ đen & đường kẻ bên trong mặt giấy nhưng giữ nguyên mép giấy
-function morphClose(a,w,h,r){
-  const dil= MorphOp(a,w,h,r,true);
-  return MorphOp(dil,w,h,r,false);
-}
-function MorphOp(a,w,h,r,isMax){
+function morphOp(a,w,h,r,isMax){
   const t=new Float32Array(w*h),o=new Float32Array(w*h);
   for(let y=0;y<h;y++){const b=y*w;for(let x=0;x<w;x++){
     let v=isMax?-1e9:1e9;const x0=Math.max(0,x-r),x1=Math.min(w-1,x+r);
@@ -92,45 +89,122 @@ function MorphOp(a,w,h,r,isMax){
   }}
   return o;
 }
+// Đóng hình thái học: Xóa chữ đen & khung bảng bên trong mặt giấy nhưng giữ nguyên mép giấy
+const morphClose=(a,w,h,r)=>morphOp(morphOp(a,w,h,r,true),w,h,r,false);
 
 function otsu(g){
   const h=new Int32Array(256);let T=g.length,sa=0;
-  for(let i=0;i<T;i++){const v=Math.max(0,Math.min(255,g[i]|0));h[v]++;}
+  for(let i=0;i<T;i++){const v=Math.max(0,Math.min(255,g[i]|0));h[v]++}
   for(let i=0;i<256;i++)sa+=i*h[i];
   let wb=0,sb=0,best=-1,t=127;
   for(let i=0;i<256;i++){wb+=h[i];if(!wb)continue;const wf=T-wb;if(!wf)break;sb+=i*h[i];const d=sb/wb-(sa-sb)/wf,v=wb*wf*d*d;if(v>best){best=v;t=i}}
   return t;
 }
 
-// ---- 3. THUẬT TOÁN PHÁT HIỆN 4 GÓC GIẤY 6 TẦNG (MULTI-CUE + CONVEX HULL + RANSAC LINE INTERSECTION)
+// Sắp xếp 4 đỉnh theo đúng thứ tự chiều kim đồng hồ: [Top-Left, Top-Right, Bottom-Right, Bottom-Left]
+function orderQuad(Q){
+  let cx=0,cy=0;for(const p of Q){cx+=p[0];cy+=p[1]}cx/=4;cy/=4;
+  const C=Q.slice().sort((a,b)=>Math.atan2(a[1]-cy,a[0]-cx)-Math.atan2(b[1]-cy,b[0]-cx));
+  let tl=0,best=1e9;
+  for(let i=0;i<4;i++){const s=C[i][0]*0.9+C[i][1]*1.1;if(s<best){best=s;tl=i}}
+  return[C[tl],C[(tl+1)%4],C[(tl+2)%4],C[(tl+3)%4]];
+}
 
-// Giữ lại vùng liên thông lớn nhất ưu tiên vùng trung tâm & lấp toàn bộ lỗ thủng bên trong (chữ, con dấu, bảng biểu)
+// Công thức Zhang (Microsoft Office Lens): Tính chính xác tỷ lệ khung hình 3D thật của tờ giấy từ 4 đỉnh phối cảnh 2D
+function calc3DAspectRatio(Q,w,h){
+  const cx=w*0.5,cy=h*0.5,f=Math.max(w,h)*0.95;
+  const m=Q.map(p=>[p[0]-cx,p[1]-cy,1]);
+  const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+  const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+  const d2=dot(cross(m[2],m[3]),m[1]),d3=dot(cross(m[3],m[2]),m[1]);
+  const wAvg=0.5*(dist(Q[0],Q[1])+dist(Q[3],Q[2])),hAvg=0.5*(dist(Q[0],Q[3])+dist(Q[1],Q[2]));
+  const ratio2D=Math.max(wAvg,hAvg)/Math.max(1e-4,Math.min(wAvg,hAvg));
+  if(Math.abs(d2)<1e-5||Math.abs(d3)<1e-5)return{ratio:ratio2D,kOk:false,portrait:hAvg>=wAvg};
+  const k2=dot(cross(m[0],m[3]),m[1])/d2;
+  const k3=dot(cross(m[0],m[2]),m[1])/d3;
+  const k1=1+k2-k3;
+  // Kiểm tra độ sâu phối cảnh hợp lý (góc nghiêng camera < 45 độ)
+  if(k1<0.45||k1>2.2||k2<0.45||k2>2.2||k3<0.45||k3>2.2)return{ratio:ratio2D,kOk:false,portrait:hAvg>=wAvg};
+  // Ước lượng tiêu cự f từ điều kiện vuông góc 2 cạnh kề nếu có phối cảnh
+  let f2=f*f;
+  const num=(k1*m[1][0]-m[0][0])*(k3*m[3][0]-m[0][0])+(k1*m[1][1]-m[0][1])*(k3*m[3][1]-m[0][1]);
+  const den=(k1-1)*(k3-1);
+  if(Math.abs(den)>1e-3){
+    const est=-num/den;
+    if(est>0.35*f*f&&est<2.5*f*f)f2=est;
+  }
+  const W3=Math.sqrt(((k1*m[1][0]-m[0][0])**2+(k1*m[1][1]-m[0][1])**2)/f2+(k1-1)**2);
+  const H3=Math.sqrt(((k3*m[3][0]-m[0][0])**2+(k3*m[3][1]-m[0][1])**2)/f2+(k3-1)**2);
+  const r3=Math.max(W3,H3)/Math.max(1e-5,Math.min(W3,H3));
+  return{ratio:0.65*r3+0.35*ratio2D,kOk:true,portrait:H3>=W3};
+}
+
+// Khớp đường thẳng bằng IRLS (Tukey Biweight) kháng nhiễu tuyệt đối với ngón tay che hoặc góc giấy quăn
+function fitRobustLine(pts){
+  if(!pts||pts.length<4)return null;
+  const n=pts.length,w=new Float32Array(n);
+  for(let i=0;i<n;i++)w[i]=pts[i][2]||1;
+  let vx=1,vy=0,mx=0,my=0;
+  for(let it=0;it<5;it++){
+    let sw=0,sx=0,sy=0;
+    for(let i=0;i<n;i++){const wi=w[i];sw+=wi;sx+=wi*pts[i][0];sy+=wi*pts[i][1]}
+    if(sw<1e-5)return null;
+    mx=sx/sw;my=sy/sw;
+    let sxx=0,syy=0,sxy=0;
+    for(let i=0;i<n;i++){const wi=w[i],dx=pts[i][0]-mx,dy=pts[i][1]-my;sxx+=wi*dx*dx;syy+=wi*dy*dy;sxy+=wi*dx*dy}
+    const tr=sxx+syy,det=sxx*syy-sxy*sxy,lam=0.5*(tr+Math.sqrt(Math.max(0,tr*tr-4*det)));
+    vx=sxy;vy=lam-sxx;
+    const len=Math.hypot(vx,vy);
+    if(len<1e-6){vx=Math.abs(sxx)>=Math.abs(syy)?1:0;vy=1-vx}else{vx/=len;vy/=len}
+    const nx=-vy,ny=vx;
+    for(let i=0;i<n;i++){
+      const r=Math.abs((pts[i][0]-mx)*nx+(pts[i][1]-my)*ny);
+      const base=pts[i][2]||1;
+      w[i]=r<1.8?base:r<4.5?base*(1-(r/4.5)**2)**2:base*0.01;
+    }
+  }
+  const a=-vy,b=vx,c=-(a*mx+b*my);
+  return[a,b,c];
+}
+
+function intersectLines(L1,L2,fallback){
+  if(!L1||!L2)return fallback;
+  const det=L1[0]*L2[1]-L2[0]*L1[1];
+  if(Math.abs(det)<1e-4)return fallback;
+  const x=(L1[1]*L2[2]-L2[1]*L1[2])/det,y=(L2[0]*L1[2]-L1[0]*L2[2])/det;
+  return(!fallback||dist([x,y],fallback)<95)?[x,y]:fallback;
+}
+
+// ---- 3. LÕI PHÁT HIỆN GIẤY CHUẨN A4/A3 (ĐA GIẢ THUYẾT + CHỐNG BẮT NHẦM KHUNG BẢNG TRONG GIẤY + KHÔI PHỤC CẠNH THỨ 4 THEO √2)
+
+// Lọc vùng liên thông lớn nhất gần tâm & lấp đầy mọi lỗ thủng (chữ, bảng biểu, dấu đỏ)
 function cleanMask(mask,w,h){
   const vis=new Int32Array(w*h),q=new Int32Array(w*h);
   let bestId=0,bestScore=-1,id=0;
   const cx=w*0.5,cy=h*0.5,maxD=Math.hypot(cx,cy);
   for(let i=0;i<w*h;i++){
     if(!mask[i]||vis[i])continue;
-    id++;let head=0,tail=0,sx=0,sy=0;
+    id++;let head=0,tail=0,sx=0,sy=0,centerHits=0;
     q[tail++]=i;vis[i]=id;
     while(head<tail){
       const cur=q[head++],x=cur%w,y=(cur/w)|0;
       sx+=x;sy+=y;
+      if(x>w*0.25&&x<w*0.75&&y>h*0.25&&y<h*0.75)centerHits++;
       if(x>0&&mask[cur-1]&&!vis[cur-1]){vis[cur-1]=id;q[tail++]=cur-1}
       if(x<w-1&&mask[cur+1]&&!vis[cur+1]){vis[cur+1]=id;q[tail++]=cur+1}
       if(y>0&&mask[cur-w]&&!vis[cur-w]){vis[cur-w]=id;q[tail++]=cur-w}
       if(y<h-1&&mask[cur+w]&&!vis[cur+w]){vis[cur+w]=id;q[tail++]=cur+w}
     }
-    const area=tail;if(area<w*h*0.08)continue;
-    const mx=sx/area,my=sy/area,centWeight=1-0.45*(Math.hypot(mx-cx,my-cy)/maxD);
-    const sc=area*centWeight;
-    if(sc>bestScore){bestScore=sc;bestId=id;}
+    const area=tail;if(area<w*h*0.07)continue;
+    const mx=sx/area,my=sy/area,centW=1-0.4*(Math.hypot(mx-cx,my-cy)/maxD);
+    const sc=area*centW*(1+centerHits/(w*h*0.25));
+    if(sc>bestScore){bestScore=sc;bestId=id}
   }
   const out=new Uint8Array(w*h);
   if(!bestId)return{mask:out,area:0};
   for(let i=0;i<w*h;i++)if(vis[i]===bestId)out[i]=1;
 
-  // Lấp mọi lỗ thủng bên trong tờ giấy bằng cách loang (Flood-Fill) nền 0 từ 4 mép khung hình
+  // Lấp mọi lỗ thủng bên trong tờ giấy
   const bg=new Uint8Array(w*h);let head=0,tail=0;
   const pushBg=idx=>{if(!out[idx]&&!bg[idx]){bg[idx]=1;q[tail++]=idx}};
   for(let x=0;x<w;x++){pushBg(x);pushBg((h-1)*w+x)}
@@ -145,7 +219,6 @@ function cleanMask(mask,w,h){
   return{mask:out,area};
 }
 
-// Bao lồi Monotone Chain O(N)
 function convexHull(pts){
   if(pts.length<=3)return pts.slice();
   const P=pts.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
@@ -156,22 +229,66 @@ function convexHull(pts){
   lo.pop();up.pop();return lo.concat(up);
 }
 
-// Sắp xếp 4 đỉnh theo đúng chiều kim đồng hồ [TL, TR, BR, BL] bất biến góc xoay
-function orderQuad(Q){
-  let cx=0,cy=0;for(const p of Q){cx+=p[0];cy+=p[1]}cx/=4;cy/=4;
-  const C=Q.slice().sort((a,b)=>Math.atan2(a[1]-cy,a[0]-cx)-Math.atan2(b[1]-cy,b[0]-cx));
-  // Chọn đỉnh Top-Left dựa trên tổng x+y nhỏ nhất trong 2 đỉnh cao nhất
-  let tl=0,best=1e9;
-  for(let i=0;i<4;i++){const s=C[i][0]*0.85+C[i][1]*1.15;if(s<best){best=s;tl=i}}
-  return[C[tl],C[(tl+1)%4],C[(tl+2)%4],C[(tl+3)%4]];
-}
-
-// Tìm tứ giác nội tiếp có diện tích lớn nhất trên bao lồi (Bất biến với mọi góc nghiêng của giấy)
-function hullToMaxQuad(H){
-  const n=H.length;if(n<4)return null;
-  if(n===4)return orderQuad(H);
-  const triArea=(a,b,c)=>Math.abs((b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]));
+// Trích xuất 4 đỉnh từ Bao lồi bằng cách gom nhóm góc hướng chính (Principal Orientation Side-Binning) + Nội tiếp diện tích cực đại
+function hullToQuads(H){
+  const n=H.length;if(n<4)return[];
+  const out=[];
   let cx=0,cy=0;for(const p of H){cx+=p[0];cy+=p[1]}cx/=n;cy/=n;
+
+  // Phương pháp A: Tìm góc nghiêng chính θ0 mod 90° của tờ giấy A4/A3 từ các cạnh bao lồi
+  const hist=new Float32Array(90);
+  for(let i=0;i<n;i++){
+    const a=H[i],b=H[(i+1)%n],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy);
+    if(l<2)continue;
+    let deg=Math.round((Math.atan2(dy,dx)*180/Math.PI)%90);
+    if(deg<0)deg+=90;
+    for(let d=-3;d<=3;d++)hist[(deg+d+90)%90]+=l*(4-Math.abs(d));
+  }
+  let bestDeg=0,bestW=-1;
+  for(let d=0;d<90;d++)if(hist[d]>bestW){bestW=hist[d];bestDeg=d}
+  const th=(bestDeg>45?bestDeg-90:bestDeg)*Math.PI/180;
+  const ux=Math.cos(th),uy=Math.sin(th),vx=-uy,vy=ux;
+
+  // Phân loại các đoạn bao lồi về 4 cạnh: Top, Right, Bottom, Left theo hệ trục xoay (u, v)
+  const sides=[[],[],[],[]];
+  for(let i=0;i<n;i++){
+    const a=H[i],b=H[(i+1)%n],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy);
+    if(l<1.5)continue;
+    // Pháp tuyến hướng ra ngoài của bao lồi ngược chiều kim đồng hồ
+    const nx=dy/l,ny=-dx/l;
+    const nu=nx*ux+ny*uy,nv=nx*vx+ny*vy;
+    const mx=0.5*(a[0]+b[0])-cx,my=0.5*(a[1]+b[1])-cy;
+    const mu=mx*ux+my*uy,mv=mx*vx+my*vy;
+    let bucket=-1;
+    if(Math.abs(nv)>=Math.abs(nu)){
+      if(nv<0&&mv<0)bucket=0; // Top
+      else if(nv>0&&mv>0)bucket=2; // Bottom
+    }else{
+      if(nu>0&&mu>0)bucket=1; // Right
+      else if(nu<0&&mu<0)bucket=3; // Left
+    }
+    if(bucket>=0){
+      const steps=Math.max(2,Math.round(l/3));
+      for(let s=0;s<=steps;s++){
+        const t=s/steps;
+        sides[bucket].push([a[0]+dx*t,a[1]+dy*t,l]);
+      }
+    }
+  }
+  if(sides.every(s=>s.length>=4)){
+    const L=sides.map(s=>fitRobustLine(s));
+    if(L.every(Boolean)){
+      const Q=[
+        intersectLines(L[3],L[0],null),
+        intersectLines(L[0],L[1],null),
+        intersectLines(L[1],L[2],null),
+        intersectLines(L[2],L[3],null)
+      ];
+      if(Q.every(Boolean))out.push(orderQuad(Q));
+    }
+  }
+
+  // Phương pháp B: Tứ giác nội tiếp diện tích cực đại trên bao lồi
   let i0=0,d0=-1;for(let i=0;i<n;i++){const d=Math.hypot(H[i][0]-cx,H[i][1]-cy);if(d>d0){d0=d;i0=i}}
   let i2=0,d2=-1;for(let i=0;i<n;i++){const d=dist(H[i0],H[i]);if(d>d2){d2=d;i2=i}}
   const side=(a,b,p)=>(b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0]);
@@ -180,235 +297,269 @@ function hullToMaxQuad(H){
     const s=side(H[i0],H[i2],H[i]),ar=Math.abs(s);
     if(s>0&&ar>b1){b1=ar;i1=i}else if(s<0&&ar>b3){b3=ar;i3=i}
   }
-  if(i1<0||i3<0)return null;
-  let idx=[i0,i1,i2,i3];
-  // Tinh chỉnh lặp 3 vòng để đạt cực đại toàn cục diện tích tứ giác
-  for(let it=0;it<3;it++){
-    for(let k=0;k<4;k++){
-      const prev=H[idx[(k+3)%4]],next=H[idx[(k+1)%4]],opp=H[idx[(k+2)%4]];
-      const refSide=Math.sign(side(prev,next,opp))||1;
-      let bestI=idx[k],bestA=-1;
-      for(let i=0;i<n;i++){
-        const sv=side(prev,next,H[i]);
-        if(sv*refSide<=0){const a=Math.abs(sv);if(a>bestA){bestA=a;bestI=i}}
+  if(i1>=0&&i3>=0){
+    let idx=[i0,i1,i2,i3];
+    for(let it=0;it<3;it++){
+      for(let k=0;k<4;k++){
+        const prev=H[idx[(k+3)%4]],next=H[idx[(k+1)%4]],opp=H[idx[(k+2)%4]];
+        const refSide=Math.sign(side(prev,next,opp))||1;
+        let bestI=idx[k],bestA=-1;
+        for(let i=0;i<n;i++){
+          const sv=side(prev,next,H[i]);
+          if(sv*refSide<=0){const a=Math.abs(sv);if(a>bestA){bestA=a;bestI=i}}
+        }
+        idx[k]=bestI;
       }
-      idx[k]=bestI;
     }
+    out.push(orderQuad(idx.map(i=>[H[i][0],H[i][1]])));
   }
-  return orderQuad(idx.map(i=>[H[i][0],H[i][1]]));
+  return out;
 }
 
-// Khớp đường thẳng bằng IRLS (Huber/Tukey) chống nhiễu khi góc giấy bị quăn mép hoặc ngón tay che
-function fitRobustLine(pts){
-  if(pts.length<4)return null;
-  const n=pts.length,w=new Float32Array(n).fill(1);
-  let vx=1,vy=0,mx=0,my=0;
-  for(let it=0;it<4;it++){
-    let sw=0,sx=0,sy=0;
-    for(let i=0;i<n;i++){const wi=w[i];sw+=wi;sx+=wi*pts[i][0];sy+=wi*pts[i][1]}
-    if(sw<1e-5)return null;
-    mx=sx/sw;my=sy/sw;
-    let sxx=0,syy=0,sxy=0;
-    for(let i=0;i<n;i++){const wi=w[i],dx=pts[i][0]-mx,dy=pts[i][1]-my;sxx+=wi*dx*dx;syy+=wi*dy*dy;sxy+=wi*dx*dy}
-    const tr=sxx+syy,det=sxx*syy-sxy*sxy,lam=0.5*(tr+Math.sqrt(Math.max(0,tr*tr-4*det)));
-    vx=sxy;vy=lam-sxx;
-    if(Math.hypot(vx,vy)<1e-6){vx=1;vy=0}else{const l=Math.hypot(vx,vy);vx/=l;vy/=l}
-    const nx=-vy,ny=vx;
-    for(let i=0;i<n;i++){const r=Math.abs((pts[i][0]-mx)*nx+(pts[i][1]-my)*ny);w[i]=r<2.2?1:r<5?2.2/r:0.05}
-  }
-  const a=-vy,b=vx,c=-(a*mx+b*my);
-  return[a,b,c];
-}
-
-function intersectLines(L1,L2,fallback){
-  if(!L1||!L2)return fallback;
-  const det=L1[0]*L2[1]-L2[0]*L1[1];
-  if(Math.abs(det)<1e-5)return fallback;
-  const x=(L1[1]*L2[2]-L2[1]*L1[2])/det,y=(L2[0]*L1[2]-L1[0]*L2[2])/det;
-  return dist([x,y],fallback)<60?[x,y]:fallback;
-}
-
-// Tinh chỉnh 4 cạnh: lấy mẫu phần giữa mỗi cạnh (15%..85% để bỏ qua góc quăn/ngón tay), hút vào biên Gradient Sobel và giao 4 đường thẳng
-function refineQuadByEdges(Q,mask,mag,gx,gy,w,h){
+// Tinh chỉnh 4 cạnh bám sát gờ giấy thật (dùng đạo hàm sắc nét 1px + lọc bước nhảy đơn hướng chống bắt nhầm khung bảng bên trong giấy)
+function refineQuadByEdges(Q,feat,searchRad=9){
+  const{w,h,mag,gx,gy,closedL,flatL,paperL}=feat;
   const lines=[];
   for(let k=0;k<4;k++){
     const A=Q[k],B=Q[(k+1)%4],len=dist(A,B);
     if(len<16){lines.push(null);continue}
     const tx=(B[0]-A[0])/len,ty=(B[1]-A[1])/len;
-    // Pháp tuyến hướng từ trong giấy ra ngoài
+    // Pháp tuyến hướng từ trong giấy ra ngoài nền (vì Q xếp theo chiều kim đồng hồ)
     const nx=ty,ny=-tx;
     const pts=[];
-    const steps=Math.min(60,Math.max(18,len|0));
+    const steps=Math.min(64,Math.max(20,len|0));
     for(let s=0;s<=steps;s++){
-      const t=0.14+0.72*(s/steps); // Bỏ 14% ở 2 đầu mút góc giấy (chống góc quăn / ngón tay đè góc)
+      const t=0.14+0.72*(s/steps); // Bỏ 14% ở 2 đầu mút góc để kháng ngón tay che góc / góc giấy quăn
       const bx=A[0]+(B[0]-A[0])*t,by=A[1]+(B[1]-A[1])*t;
-      let bestR=0,bestScore=-1;
-      for(let r=-7;r<=7;r+=0.5){
+      let bestR=0,bestScore=-1e9;
+      for(let r=-searchRad;r<=searchRad;r+=0.5){
         const px=Math.round(bx+nx*r),py=Math.round(by+ny*r);
-        if(px<1||py<1||px>=w-1||py>=h-1)continue;
+        // Nếu cạnh giấy nằm sát mép khung hình camera
+        if(px<=1||py<=1||px>=w-2||py>=h-2){
+          if(Math.abs(r)<1.5&&bestScore<5){bestScore=5;bestR=r}
+          continue;
+        }
         const idx=py*w+px,m=mag[idx];
-        // Hướng gradient phải vuông góc với cạnh giấy
+        // Hướng đạo hàm phải vuông góc với cạnh giấy
         const align=Math.abs(gx[idx]*nx+gy[idx]*ny)/(m+1e-3);
-        // Kiểm tra bước nhảy mặt nạ (trong = 1, ngoài = 0)
-        const ix=Math.min(w-1,Math.max(0,Math.round(px-nx*2))),iy=Math.min(h-1,Math.max(0,Math.round(py-ny*2)));
-        const ox=Math.min(w-1,Math.max(0,Math.round(px+nx*2))),oy=Math.min(h-1,Math.max(0,Math.round(py+ny*2)));
-        const stepBonus=(mask&&mask[iy*w+ix]&&!mask[oy*w+ox])?25:0;
-        const sc=(m*align+stepBonus)*(1-0.04*Math.abs(r));
+        // Lấy mẫu điểm BÊN TRONG giấy (4px) và BÊN NGOÀI giấy (4px) trên ảnh đã xóa chữ closedL
+        const ix=Math.min(w-1,Math.max(0,Math.round(px-nx*4))),iy=Math.min(h-1,Math.max(0,Math.round(py-ny*4)));
+        const ox=Math.min(w-1,Math.max(0,Math.round(px+nx*4))),oy=Math.min(h-1,Math.max(0,Math.round(py+ny*4)));
+        const inL=closedL[iy*w+ix],outL=closedL[oy*w+ox];
+        const inFlat=flatL[iy*w+ix],outFlat=flatL[oy*w+ox];
+        const stepL=(inL-outL)+0.8*(inFlat-outFlat);
+        // CHỐNG BẮT NHẦM KHUNG BẢNG TRONG GIẤY: Nếu cả bên trong và bên ngoài đều trắng như mặt giấy -> phạt nặng!
+        const bothPaperPenalty=(outFlat>paperL-10&&Math.abs(inFlat-outFlat)<9)?35:0;
+        const sc=(m*(0.4+0.6*align)*1.6 + Math.max(-15,Math.min(55,stepL))*1.1 - bothPaperPenalty)*(1-0.028*Math.abs(r));
         if(sc>bestScore){bestScore=sc;bestR=r}
       }
-      if(bestScore>6)pts.push([bx+nx*bestR,by+ny*bestR]);
+      if(bestScore>3.5)pts.push([bx+nx*bestR,by+ny*bestR,Math.max(1,bestScore)]);
     }
     lines.push(fitRobustLine(pts));
   }
-  const R=[
+  return[
     intersectLines(lines[3],lines[0],Q[0]),
     intersectLines(lines[0],lines[1],Q[1]),
     intersectLines(lines[1],lines[2],Q[2]),
     intersectLines(lines[2],lines[3],Q[3])
   ];
-  return R;
 }
 
-// Kiểm tra tính hợp lệ hình học của tứ giác phối cảnh
-function isValidQuad(Q,w,h){
+// Kiểm tra tứ giác hợp lệ cho tờ giấy A4/A3
+function isValidA4A3Quad(Q,w,h){
   if(!Q||Q.length!==4)return false;
-  const pad=Math.max(w,h)*0.08;
-  for(const[x,y]of Q)if(!Number.isFinite(x)||!Number.isFinite(y)||x<-pad||y<-pad||x>w+pad||y>h+pad)return false;
+  const padX=w*0.12,padY=h*0.12;
+  for(const[x,y]of Q)if(!Number.isFinite(x)||!Number.isFinite(y)||x<-padX||y<-padY||x>w+padX||y>h+padY)return false;
   let area2=0;
   for(let i=0;i<4;i++){
     const a=Q[i],b=Q[(i+1)%4],c=Q[(i+2)%4];
     const cross=(b[0]-a[0])*(c[1]-b[1])-(b[1]-a[1])*(c[0]-b[0]);
     if(cross<=0)return false; // Phải lồi chặt theo chiều kim đồng hồ
     const l1=dist(a,b),l2=dist(b,c);
-    if(l1<Math.min(w,h)*0.14)return false;
+    if(l1<Math.min(w,h)*0.18)return false;
     const cos=((b[0]-a[0])*(c[0]-b[0])+(b[1]-a[1])*(c[1]-b[1]))/(l1*l2+1e-6);
     const ang=Math.acos(Math.max(-1,Math.min(1,-cos)))*180/Math.PI;
-    if(ang<48||ang>136)return false; // Góc tứ giác phải hợp lý (48°..136°)
+    if(ang<58||ang>122)return false; // Góc tờ giấy A4/A3 trong phối cảnh phải nằm trong [58°..122°]
     area2+=a[0]*b[1]-b[0]*a[1];
   }
   const area=Math.abs(area2)*0.5,tot=w*h;
-  if(area<tot*0.12||area>tot*0.97)return false;
+  if(area<tot*0.11||area>tot*0.985)return false;
+  // Hai cạnh đối diện của tờ A4/A3 không được lệch nhau quá mức phối cảnh cho phép
   const d0=dist(Q[0],Q[1]),d2=dist(Q[2],Q[3]),d1=dist(Q[1],Q[2]),d3=dist(Q[3],Q[0]);
-  if(Math.max(d0,d2)/Math.min(d0,d2)>2.4||Math.max(d1,d3)/Math.min(d1,d3)>2.4)return false;
+  if(Math.max(d0,d2)/Math.min(d0,d2)>1.65||Math.max(d1,d3)/Math.min(d1,d3)>1.65)return false;
   return true;
 }
 
-// Hàm chấm điểm chất lượng tứ giác (kết hợp Năng lượng biên Sobel + Độ tương phản trong/ngoài + Độ phủ biên)
-function scoreQuad(Q,closedL,mag,gx,gy,w,h){
-  if(!isValidQuad(Q,w,h))return -1e9;
-  let edgeSum=0,contrastSum=0,supportCnt=0,totalSamples=0;
-  for(let k=0;k<4;k++){
-    const A=Q[k],B=Q[(k+1)%4],len=dist(A,B);
-    const nx=(B[1]-A[1])/len,ny=-(B[0]-A[0])/len;
-    const S=48;
-    for(let s=3;s<S-3;s++){
-      const t=s/S,x=A[0]+(B[0]-A[0])*t,y=A[1]+(B[1]-A[1])*t;
-      const xi=Math.round(x),yi=Math.round(y);
-      if(xi<2||yi<2||xi>=w-2||yi>=h-2)continue;
-      totalSamples++;
-      // Tìm đỉnh gradient trong lân cận +-2px
-      let bestM=0;
-      for(let r=-2;r<=2;r++){
-        const px=Math.min(w-1,Math.max(0,Math.round(x+nx*r))),py=Math.min(h-1,Math.max(0,Math.round(y+ny*r)));
-        const idx=py*w+px,m=mag[idx];
-        const align=Math.abs(gx[idx]*nx+gy[idx]*ny)/(m+1e-3);
-        if(m*align>bestM)bestM=m*align;
-      }
-      edgeSum+=Math.min(80,bestM);
-      if(bestM>10)supportCnt++;
-      // So sánh độ sáng bên trong mép giấy (3px) và bên ngoài mép giấy (3px)
-      const ix=Math.min(w-1,Math.max(0,Math.round(x-nx*3))),iy=Math.min(h-1,Math.max(0,Math.round(y-ny*3)));
-      const ox=Math.min(w-1,Math.max(0,Math.round(x+nx*3))),oy=Math.min(h-1,Math.max(0,Math.round(y+ny*3)));
-      const diff=closedL[iy*w+ix]-closedL[oy*w+ox];
-      contrastSum+=Math.max(-30,Math.min(70,diff));
+// Chấm điểm từng cạnh của tứ giác (để biết cạnh nào mạnh, cạnh nào yếu cần phục hồi theo tỷ lệ A4/A3)
+function scoreSingleEdge(A,B,feat){
+  const{w,h,mag,gx,gy,closedL,flatL,paperL}=feat;
+  const len=dist(A,B);if(len<15)return -50;
+  const nx=(B[1]-A[1])/len,ny=-(B[0]-A[0])/len;
+  let edgeSum=0,stepSum=0,hits=0,cnt=0;
+  const S=40;
+  for(let s=4;s<S-4;s++){
+    const t=s/S,x=A[0]+(B[0]-A[0])*t,y=A[1]+(B[1]-A[1])*t;
+    const xi=Math.round(x),yi=Math.round(y);
+    if(xi<0||yi<0||xi>=w||yi>=h)continue;
+    cnt++;
+    if(xi<=2||yi<=2||xi>=w-3||yi>=h-3){
+      // Cạnh chạm sát mép ảnh: kiểm tra bên trong vẫn là mặt giấy
+      const ix=Math.min(w-1,Math.max(0,Math.round(x-nx*4))),iy=Math.min(h-1,Math.max(0,Math.round(y-ny*4)));
+      if(flatL[iy*w+ix]>paperL-18){edgeSum+=12;stepSum+=10;hits++}
+      continue;
     }
+    let bestM=0;
+    for(let r=-2;r<=2;r++){
+      const px=Math.min(w-1,Math.max(0,Math.round(x+nx*r))),py=Math.min(h-1,Math.max(0,Math.round(y+ny*r)));
+      const idx=py*w+px,m=mag[idx];
+      const align=Math.abs(gx[idx]*nx+gy[idx]*ny)/(m+1e-3);
+      const val=m*(0.35+0.65*align);
+      if(val>bestM)bestM=val;
+    }
+    const ix=Math.min(w-1,Math.max(0,Math.round(x-nx*4))),iy=Math.min(h-1,Math.max(0,Math.round(y-ny*4)));
+    const ox=Math.min(w-1,Math.max(0,Math.round(x+nx*4))),oy=Math.min(h-1,Math.max(0,Math.round(y+ny*4)));
+    const inFlat=flatL[iy*w+ix],outFlat=flatL[oy*w+ox];
+    const diff=(closedL[iy*w+ix]-closedL[oy*w+ox])+0.8*(inFlat-outFlat);
+    // Phạt nếu cả trong và ngoài đều là nền giấy trắng (đường kẻ bảng bên trong tờ giấy!)
+    const innerLinePen=(outFlat>paperL-9&&Math.abs(inFlat-outFlat)<8)?28:0;
+    edgeSum+=Math.min(55,bestM);
+    stepSum+=Math.max(-20,Math.min(55,diff))-innerLinePen;
+    if(bestM>5.5||diff>10)hits++;
   }
-  if(totalSamples<40)return -1e9;
-  const coverage=supportCnt/totalSamples;
-  if(coverage<0.32)return -1e9;
+  if(cnt<10)return -50;
+  return (edgeSum/cnt)*1.4+(stepSum/cnt)*1.25+(hits/cnt)*28;
+}
+
+// Hàm chấm điểm tổng hợp chuyên biệt cho khổ giấy A4 / A3 (1 : √2)
+function scoreA4A3Quad(Q,feat){
+  const{w,h}=feat;
+  if(!isValidA4A3Quad(Q,w,h))return -1e9;
+  const{ratio,kOk}=calc3DAspectRatio(Q,w,h);
+  // Ràng buộc cứng: Tờ giấy A4/A3 thật ngoài đời (dù nghiêng) luôn có tỷ lệ nằm quanh √2 ≈ 1.4142
+  if(ratio<1.14||ratio>1.74)return -1e9;
+  const relErr=Math.abs(ratio-ISO_RATIO)/ISO_RATIO;
+  // Điểm thưởng Gaussian cực đại tại đúng tỷ lệ A4/A3 = 1.41421356
+  const isoScore=85*Math.exp(-(relErr*relErr)/(2*0.082*0.082))+(kOk?12:-10);
+
+  // Tính điểm cho cả 4 cạnh
+  let eSum=0,minEdge=1e9;
+  for(let k=0;k<4;k++){
+    const es=scoreSingleEdge(Q[k],Q[(k+1)%4],feat);
+    eSum+=es;if(es<minEdge)minEdge=es;
+  }
+  if(eSum<25)return -1e9;
+
+  // Điểm bao phủ diện tích hợp lý (ưu tiên bao trọn mặt giấy ngoài cùng thay vì khung bảng nhỏ bên trong)
   let area=0;for(let i=0;i<4;i++){const a=Q[i],b=Q[(i+1)%4];area+=a[0]*b[1]-b[0]*a[1]}
   area=Math.abs(area)*0.5/(w*h);
-  return (edgeSum/totalSamples)*1.8+(contrastSum/totalSamples)*1.1+coverage*45+Math.min(0.75,area)*22;
+  const areaScore=Math.min(0.82,area)*36;
+
+  return isoScore + eSum*0.85 + Math.max(-20,minEdge)*0.45 + areaScore;
 }
 
-// Trích xuất tứ giác từ mặt nạ nhị phân
-function maskToQuadCandidate(rawMask,mag,gx,gy,w,h){
-  const{mask,area}=cleanMask(rawMask,w,h);
-  if(area<w*h*0.10||area>w*h*0.96)return null;
-  const bnd=[];
-  for(let y=1;y<h-1;y++){
-    const row=y*w;
-    for(let x=1;x<w-1;x++){
-      const i=row+x;
-      if(mask[i]&&(!mask[i-1]||!mask[i+1]||!mask[i-w]||!mask[i+w]))bnd.push([x,y]);
+// VŨ KHÍ BÍ MẬT: Khôi phục cạnh thứ 4 từ 3 cạnh tốt dựa trên tỷ lệ chuẩn A4/A3 (√2 = 1.41421356)
+function synthesizeA4A3Candidates(Q,feat){
+  const{w,h}=feat;
+  if(!Q||Q.length!==4)return[];
+  const out=[];
+  // Thử giữ cố định 3 cạnh và dịch chuyển cạnh thứ k (k = 0:Top, 1:Right, 2:Bottom, 3:Left) sao cho tỷ lệ 3D đúng bằng √2
+  for(let moveEdge=0;moveEdge<4;moveEdge++){
+    const iA=moveEdge,iB=(moveEdge+1)%4,iC=(moveEdge+2)%4,iD=(moveEdge+3)%4;
+    // Giữ đỉnh đối diện iD và iC cố định, trượt iA dọc theo tia (iD -> iA) và iB dọc theo tia (iC -> iB)
+    const baseA=Q[iD],baseB=Q[iC];
+    const vAx=Q[iA][0]-baseA[0],vAy=Q[iA][1]-baseA[1];
+    const vBx=Q[iB][0]-baseB[0],vBy=Q[iB][1]-baseB[1];
+    const lenA=Math.hypot(vAx,vAy),lenB=Math.hypot(vBx,vBy),oppLen=dist(baseA,baseB);
+    if(lenA<20||lenB<20||oppLen<20)continue;
+
+    // Một tờ giấy A4/A3 chỉ có thể ở trạng thái Dọc (cạnh bên = oppLen * √2) hoặc Ngang (cạnh bên = oppLen / √2)
+    for(const targetScale of[ISO_RATIO,1/ISO_RATIO]){
+      const idealLen=oppLen*targetScale;
+      const lam0=idealLen/(0.5*(lenA+lenB));
+      if(lam0<0.45||lam0>1.85)continue;
+
+      // Tinh chỉnh hệ số trượt lam bằng chia đôi (Bisection) để calc3DAspectRatio đạt đúng √2
+      let bestLam=lam0,bestDiff=1e9;
+      for(let s=-0.12;s<=0.12;s+=0.02){
+        const lam=lam0*(1+s);
+        const cand=Q.slice();
+        cand[iA]=[baseA[0]+vAx*lam,baseA[1]+vAy*lam];
+        cand[iB]=[baseB[0]+vBx*lam,baseB[1]+vBy*lam];
+        const{ratio}=calc3DAspectRatio(cand,w,h);
+        const df=Math.abs(ratio-ISO_RATIO);
+        if(df<bestDiff){bestDiff=df;bestLam=lam}
+      }
+      const synQ=Q.slice();
+      synQ[iA]=[Math.max(0,Math.min(w,baseA[0]+vAx*bestLam)),Math.max(0,Math.min(h,baseA[1]+vAy*bestLam))];
+      synQ[iB]=[Math.max(0,Math.min(w,baseB[0]+vBx*bestLam)),Math.max(0,Math.min(h,baseB[1]+vBy*bestLam))];
+      out.push(synQ);
+      // Hút nhẹ cạnh vừa tổng hợp vào gờ giấy thật trong bán kính 7px
+      out.push(refineQuadByEdges(synQ,feat,7));
     }
   }
-  if(bnd.length<30)return null;
-  const H=convexHull(bnd);
-  const Q0=hullToMaxQuad(H);
-  if(!Q0)return null;
-  const Q1=refineQuadByEdges(Q0,mask,mag,gx,gy,w,h);
-  return{Q0,Q1,mask};
+  return out;
 }
 
-// Ứng viên thứ 4: Dò trực tiếp 4 đường biên Gradient mạnh nhất (Dành cho giấy trắng đặt trên mặt bàn trắng)
-function directEdgeQuadCandidate(mag,gx,gy,w,h){
+// Dò trực tiếp 4 đường biên Step-Edge theo tỷ lệ A4/A3 (Dành cho trường hợp bàn trắng cùng màu giấy)
+function directA4A3EdgeQuads(feat){
+  const{w,h,mag,gx,gy,flatL,paperL}=feat;
+  // Tìm góc nghiêng chủ đạo θ0 từ phổ hướng Gradient
+  const hist=new Float32Array(90);
+  for(let y=8;y<h-8;y+=2){
+    for(let x=8;x<w-8;x+=2){
+      const i=y*w+x,m=mag[i];if(m<8)continue;
+      let deg=Math.round((Math.atan2(-gx[i],gy[i])*180/Math.PI)%90);
+      if(deg<0)deg+=90;
+      hist[deg]+=m;
+    }
+  }
+  let bestDeg=0,bestW=-1;
+  for(let d=0;d<90;d++)if(hist[d]>bestW){bestW=hist[d];bestDeg=d}
+  const th=(bestDeg>45?bestDeg-90:bestDeg)*Math.PI/180;
+  const ux=Math.cos(th),uy=Math.sin(th),vx=-uy,vy=ux;
   const cx=w*0.5,cy=h*0.5;
-  const zones=[[],[],[],[]]; // Top, Right, Bottom, Left
-  const vals=[];
-  for(let i=0;i<mag.length;i++)if(mag[i]>8)vals.push(mag[i]);
-  if(vals.length<100)return null;
-  vals.sort((a,b)=>a-b);
-  const th=vals[Math.floor(vals.length*0.78)];
-  for(let y=6;y<h-6;y++){
-    for(let x=6;x<w-6;x++){
-      const i=y*w+x,m=mag[i];if(m<th)continue;
+
+  // Chiếu năng lượng Step-Edge lên 2 trục vuông góc u, v để tìm các đỉnh biên Trái, Phải, Trên, Dưới
+  const maxU=Math.round(Math.hypot(w,h)*0.5),profU=new Float32Array(maxU*2+1),profV=new Float32Array(maxU*2+1);
+  for(let y=4;y<h-4;y++){
+    for(let x=4;x<w-4;x++){
+      const i=y*w+x,m=mag[i];if(m<5)continue;
       const dx=x-cx,dy=y-cy;
-      if(Math.abs(dy)>Math.abs(dx)*0.7){
-        if(dy<-h*0.08&&Math.abs(gy[i])>Math.abs(gx[i])*1.1)zones[0].push([x,y,m]);
-        else if(dy>h*0.08&&Math.abs(gy[i])>Math.abs(gx[i])*1.1)zones[2].push([x,y,m]);
-      }
-      if(Math.abs(dx)>Math.abs(dy)*0.7){
-        if(dx>w*0.08&&Math.abs(gx[i])>Math.abs(gy[i])*1.1)zones[1].push([x,y,m]);
-        else if(dx<-w*0.08&&Math.abs(gx[i])>Math.abs(gy[i])*1.1)zones[3].push([x,y,m]);
-      }
+      const u=Math.round(dx*ux+dy*uy),v=Math.round(dx*vx+dy*vy);
+      const gu=Math.abs(gx[i]*ux+gy[i]*uy),gv=Math.abs(gx[i]*vx+gy[i]*vy);
+      if(gu>gv*1.2&&Math.abs(u)<maxU)profU[u+maxU]+=m;
+      if(gv>gu*1.2&&Math.abs(v)<maxU)profV[v+maxU]+=m;
     }
   }
-  const lines=[];
-  for(let z=0;z<4;z++){
-    const P=zones[z];if(P.length<15)return null;
-    let bestL=null,bestIn=-1;
-    // RANSAC tìm đường biên thẳng có tổng trọng số gradient lớn nhất
-    for(let it=0;it<45;it++){
-      const p1=P[(it*17)%P.length],p2=P[(it*53+11)%P.length];
-      const d=Math.hypot(p2[0]-p1[0],p2[1]-p1[1]);
-      if(d<Math.min(w,h)*0.18)continue;
-      const a=(p1[1]-p2[1])/d,b=(p2[0]-p1[0])/d,c=-(a*p1[0]+b*p1[1]);
-      let inliers=0;
-      for(let k=0;k<P.length;k++){if(Math.abs(a*P[k][0]+b*P[k][1]+c)<2.5)inliers+=P[k][2]}
-      if(inliers>bestIn){bestIn=inliers;bestL=[a,b,c]}
+  const topPeaks=(arr,sign)=>{
+    const pk=[];
+    for(let k=Math.round(maxU*0.18);k<maxU-2;k++){
+      const idx=maxU+sign*k,v=arr[idx];
+      if(v>arr[idx-1]&&v>=arr[idx+1]&&v>40)pk.push({d:sign*k,v});
     }
-    if(!bestL)return null;
-    const inPts=P.filter(p=>Math.abs(bestL[0]*p[0]+bestL[1]*p[1]+bestL[2])<3).map(p=>[p[0],p[1]]);
-    lines.push(fitRobustLine(inPts)||bestL);
+    pk.sort((a,b)=>b.v-a.v);
+    return pk.slice(0,3).map(p=>p.d);
+  };
+  const Lpeaks=topPeaks(profU,-1),Rpeaks=topPeaks(profU,1),Tpeaks=topPeaks(profV,-1),Bpeaks=topPeaks(profV,1);
+  const quads=[];
+  for(const uL of Lpeaks)for(const uR of Rpeaks)for(const vT of Tpeaks)for(const vB of Bpeaks){
+    const W=uR-uL,H=vB-vT,r=Math.max(W,H)/Math.max(1,Math.min(W,H));
+    if(Math.abs(r-ISO_RATIO)/ISO_RATIO<0.18){
+      const pt=(u,v)=>[cx+u*ux+v*vx,cy+u*uy+v*vy];
+      const q=[pt(uL,vT),pt(uR,vT),pt(uR,vB),pt(uL,vB)];
+      quads.push(refineQuadByEdges(q,feat,10));
+    }
   }
-  const def=[[w*0.1,h*0.1],[w*0.9,h*0.1],[w*0.9,h*0.9],[w*0.1,h*0.9]];
-  return[
-    intersectLines(lines[3],lines[0],def[0]),
-    intersectLines(lines[0],lines[1],def[1]),
-    intersectLines(lines[1],lines[2],def[2]),
-    intersectLines(lines[2],lines[3],def[3])
-  ];
+  return quads;
 }
 
-// Hàm tổng hợp: Tìm 4 góc giấy chính xác trên ảnh gốc
+// Hàm chính: Phát hiện 4 góc giấy A4/A3
 function detectDocQuad(c){
-  const MAXD=360,sc=MAXD/Math.max(c.width,c.height);
-  const sw=Math.max(40,Math.round(c.width*sc)),sh=Math.max(40,Math.round(c.height*sc));
+  const MAXD=380,sc=MAXD/Math.max(c.width,c.height);
+  const sw=Math.max(48,Math.round(c.width*sc)),sh=Math.max(48,Math.round(c.height*sc));
   const s=mk(sw,sh),sx=s.getContext('2d');sx.drawImage(c,0,0,sw,sh);
   const px=sx.getImageData(0,0,sw,sh).data,N=sw*sh;
 
-  // Tách 3 kênh: Độ sáng L, Độ lệch Đỏ Cr (bắt Sổ hồng/dấu đỏ), Độ lệch Vàng-Xanh Cb (bắt giấy cũ/bàn gỗ)
   const L=new Float32Array(N),Cr=new Float32Array(N),Cb=new Float32Array(N);
   for(let i=0;i<N;i++){
     const r=px[i*4],g=px[i*4+1],b=px[i*4+2];
@@ -417,351 +568,102 @@ function detectDocQuad(c){
     Cb[i]=b-(r+g)*0.5;
   }
 
-  // Tầng 1: Đóng hình thái học (Morphological Closing) xóa sạch chữ đen & khung bảng bên trong tờ giấy
-  const closedL=blur(morphClose(L,sw,sh,4),sw,sh,2);
-  const smCr=blur(Cr,sw,sh,2),smCb=blur(Cb,sw,sh,2);
+  // 1. Tách riêng ảnh sắc nét (1px blur) để tính Sobel chính xác & ảnh đóng hình thái học (closedL) để xóa chữ/khung bảng
+  const sharpL=blur(L,sw,sh,1),smCr=blur(Cr,sw,sh,1),smCb=blur(Cb,sw,sh,1);
+  const closeRad=Math.max(3,Math.round(Math.min(sw,sh)/68));
+  const closedL=blur(morphClose(L,sw,sh,closeRad),sw,sh,1);
 
-  // Tầng 2: Tính Gradient Sobel đa kênh (L, Cr, Cb)
+  // Khử bóng đổ cục bộ (Illumination Normalization)
+  const illum=blur(closedL,sw,sh,Math.round(Math.min(sw,sh)*0.16));
+  const flatL=new Float32Array(N);
+  for(let i=0;i<N;i++)flatL[i]=Math.min(255,closedL[i]*0.55+(closedL[i]/Math.max(55,illum[i]))*205*0.45);
+
+  // Ước lượng độ sáng & màu chuẩn của mặt giấy A4/A3 từ vùng trung tâm ảnh (lấy phân vị 78% để bỏ qua chữ đen)
+  const cVals=[];
+  let pCr=0,pCb=0,pCnt=0;
+  for(let y=Math.round(sh*0.25);y<Math.round(sh*0.75);y+=2){
+    for(let x=Math.round(sw*0.25);x<Math.round(sw*0.75);x+=2){
+      cVals.push(flatL[y*sw+x]);
+    }
+  }
+  cVals.sort((a,b)=>a-b);
+  const paperL=cVals[Math.floor(cVals.length*0.78)]||200;
+  for(let y=Math.round(sh*0.25);y<Math.round(sh*0.75);y+=2){
+    for(let x=Math.round(sw*0.25);x<Math.round(sw*0.75);x+=2){
+      const i=y*sw+x;if(flatL[i]>=paperL-15){pCr+=smCr[i];pCb+=smCb[i];pCnt++}
+    }
+  }
+  if(pCnt>0){pCr/=pCnt;pCb/=pCnt}
+
+  // 2. Tính đạo hàm Sobel trên ảnh sắc nét `sharpL` (Giữ nguyên độ nét 1px của mép giấy!)
   const mag=new Float32Array(N),gx=new Float32Array(N),gy=new Float32Array(N);
   for(let y=1;y<sh-1;y++){
     for(let x=1;x<sw-1;x++){
       const i=y*sw+x;
-      const sxL=(closedL[i-sw+1]+2*closedL[i+1]+closedL[i+sw+1])-(closedL[i-sw-1]+2*closedL[i-1]+closedL[i+sw-1]);
-      const syL=(closedL[i+sw-1]+2*closedL[i+sw]+closedL[i+sw+1])-(closedL[i-sw-1]+2*closedL[i-sw]+closedL[i-sw+1]);
-      const sxR=((smCr[i-sw+1]+2*smCr[i+1]+smCr[i+sw+1])-(smCr[i-sw-1]+2*smCr[i-1]+smCr[i+sw-1]))*0.75;
-      const syR=((smCr[i+sw-1]+2*smCr[i+sw]+smCr[i+sw+1])-(smCr[i-sw-1]+2*smCr[i-sw]+smCr[i-sw+1]))*0.75;
-      const sxB=((smCb[i-sw+1]+2*smCb[i+1]+smCb[i+sw+1])-(smCb[i-sw-1]+2*smCb[i-1]+smCb[i+sw-1]))*0.75;
-      const syB=((smCb[i+sw-1]+2*smCb[i+sw]+smCb[i+sw+1])-(smCb[i-sw-1]+2*smCb[i-sw]+smCb[i-sw+1]))*0.75;
-      const mL=Math.hypot(sxL,syL),mR=Math.hypot(sxR,syR),mB=Math.hypot(sxB,syB);
-      if(mL>=mR&&mL>=mB){mag[i]=mL*0.25;gx[i]=sxL*0.25;gy[i]=syL*0.25}
-      else if(mR>=mB){mag[i]=mR*0.25;gx[i]=sxR*0.25;gy[i]=syR*0.25}
+      const sxL=(sharpL[i-sw+1]+2*sharpL[i+1]+sharpL[i+sw+1])-(sharpL[i-sw-1]+2*sharpL[i-1]+sharpL[i+sw-1]);
+      const syL=(sharpL[i+sw-1]+2*sharpL[i+sw]+sharpL[i+sw+1])-(sharpL[i-sw-1]+2*sharpL[i-sw]+sharpL[i-sw+1]);
+      const sxC=((smCr[i-sw+1]+2*smCr[i+1]+smCr[i+sw+1])-(smCr[i-sw-1]+2*smCr[i-1]+smCr[i+sw-1]))*0.7;
+      const syC=((smCr[i+sw-1]+2*smCr[i+sw]+smCr[i+sw+1])-(smCr[i-sw-1]+2*smCr[i-sw]+smCr[i-sw+1]))*0.7;
+      const sxB=((smCb[i-sw+1]+2*smCb[i+1]+smCb[i+sw+1])-(smCb[i-sw-1]+2*smCb[i-1]+smCb[i+sw-1]))*0.7;
+      const syB=((smCb[i+sw-1]+2*smCb[i+sw]+smCb[i+sw+1])-(smCb[i-sw-1]+2*smCb[i-sw]+smCb[i-sw+1]))*0.7;
+      const mL=Math.hypot(sxL,syL),mC=Math.hypot(sxC,syC),mB=Math.hypot(sxB,syB);
+      if(mL>=mC&&mL>=mB){mag[i]=mL*0.25;gx[i]=sxL*0.25;gy[i]=syL*0.25}
+      else if(mC>=mB){mag[i]=mC*0.25;gx[i]=sxC*0.25;gy[i]=syC*0.25}
       else{mag[i]=mB*0.25;gx[i]=sxB*0.25;gy[i]=syB*0.25}
     }
   }
 
-  // Tầng 3: Sinh 3 mặt nạ ứng viên đa giả thuyết
-  // Mask 1: Otsu trên ảnh đã đóng hình thái học (Chống chữ đen làm thủng giấy)
-  const t1=otsu(closedL),m1=new Uint8Array(N);
-  for(let i=0;i<N;i++)m1[i]=closedL[i]>t1?1:0;
+  const feat={w:sw,h:sh,mag,gx,gy,closedL,flatL,paperL};
 
-  // Mask 2: Khử bóng đổ cục bộ (Illumination-Normalized Otsu - Chống bóng người/điện thoại đổ lên trang giấy)
-  const illum=blur(closedL,sw,sh,Math.round(Math.min(sw,sh)*0.18));
-  const normL=new Float32Array(N);
-  for(let i=0;i<N;i++)normL[i]=Math.min(255,closedL[i]*0.65+(closedL[i]/Math.max(60,illum[i]))*195*0.35);
-  const t2=otsu(normL),m2=new Uint8Array(N);
-  for(let i=0;i<N;i++)m2[i]=normL[i]>t2?1:0;
+  // 3. Sinh 5 mặt nạ đa giả thuyết
+  const masks=[];
+  const tOtsu1=otsu(closedL),tOtsu2=otsu(flatL);
+  // Mask 1 & 2: Otsu trên closedL và flatL
+  const m1=new Uint8Array(N),m2=new Uint8Array(N),m3=new Uint8Array(N),m4=new Uint8Array(N);
+  for(let i=0;i<N;i++){
+    m1[i]=closedL[i]>tOtsu1?1:0;
+    m2[i]=flatL[i]>tOtsu2?1:0;
+    m3[i]=flatL[i]>Math.max(tOtsu2-12,paperL-28)?1:0; // Nhạy với vùng giấy bị bóng râm
+    const cDist=Math.hypot(smCr[i]-pCr,smCb[i]-pCb);
+    m4[i]=(flatL[i]>paperL-24&&cDist<26)?1:0; // Mô hình đồng nhất mặt giấy trung tâm
+  }
+  masks.push(m1,m2,m3,m4);
 
-  // Mask 3: Khoảng cách màu & độ sáng so với viền nền (Chuyên trị Sổ đỏ/Sổ hồng hoặc bàn làm việc sáng màu)
+  // Mask 5: Khoảng cách với nền viền ảnh
   let bgL=0,bgCr=0,bgCb=0,bgCnt=0;
   for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){
-    if(x<4||x>=sw-4||y<4||y>=sh-4){const i=y*sw+x;bgL+=closedL[i];bgCr+=smCr[i];bgCb+=smCb[i];bgCnt++}
+    if(x<3||x>=sw-3||y<3||y>=sh-3){const i=y*sw+x;bgL+=closedL[i];bgCr+=smCr[i];bgCb+=smCb[i];bgCnt++}
   }
   bgL/=bgCnt;bgCr/=bgCnt;bgCb/=bgCnt;
   const distMap=new Float32Array(N);
-  for(let i=0;i<N;i++){
-    const dL=Math.max(0,closedL[i]-bgL)*1.3+Math.abs(closedL[i]-bgL)*0.4;
-    const dC=Math.hypot(smCr[i]-bgCr,smCb[i]-bgCb)*0.85;
-    distMap[i]=Math.min(255,dL+dC);
-  }
-  const t3=otsu(distMap),m3=new Uint8Array(N);
-  for(let i=0;i<N;i++)m3[i]=distMap[i]>Math.max(18,t3)?1:0;
+  for(let i=0;i<N;i++)distMap[i]=Math.min(255,Math.max(0,closedL[i]-bgL)*1.25+Math.hypot(smCr[i]-bgCr,smCb[i]-bgCb)*0.9);
+  const t5=otsu(distMap),m5=new Uint8Array(N);
+  for(let i=0;i<N;i++)m5[i]=distMap[i]>Math.max(15,t5)?1:0;
+  masks.push(m5);
 
-  // Thu thập tất cả các tứ giác ứng viên và chấm điểm
-  const candidates=[];
-  for(const m of[m1,m2,m3]){
-    const res=maskToQuadCandidate(m,mag,gx,gy,sw,sh);
-    if(res){candidates.push(res.Q0);candidates.push(res.Q1)}
-  }
-  const directQ=directEdgeQuadCandidate(mag,gx,gy,sw,sh);
-  if(directQ){
-    candidates.push(directQ);
-    candidates.push(refineQuadByEdges(directQ,null,mag,gx,gy,sw,sh));
-  }
-
-  let bestQ=null,bestScore=-1e9;
-  for(const q of candidates){
-    const scScore=scoreQuad(q,closedL,mag,gx,gy,sw,sh);
-    if(scScore>bestScore){bestScore=scScore;bestQ=q}
-  }
-
-  if(!bestQ||bestScore<18)return null;
-  return bestQ.map(p=>[
-    Math.max(0,Math.min(c.width,p[0]/sc)),
-    Math.max(0,Math.min(c.height,p[1]/sc))
-  ]);
-}
-
-// ---- 4. BIẾN ĐỔI PHỐI CẢNH (HOMOGRAPHY WARP) + KHÔI PHỤC TỶ LỆ THẬT + CẮT VIỀN ĐEN
-function warp(c,Q){
-  // Cắt lẹm viền 0.8% vào phía trong để triệt tiêu hoàn toàn viền bóng đen sát mép giấy
-  let cx=0,cy=0;for(const p of Q){cx+=p[0];cy+=p[1]}cx/=4;cy/=4;
-  const Qs=Q.map(p=>[p[0]+(cx-p[0])*0.008,p[1]+(cy-p[1])*0.008]);
-
-  const wTop=dist(Qs[0],Qs[1]),wBot=dist(Qs[3],Qs[2]);
-  const hLeft=dist(Qs[0],Qs[3]),hRight=dist(Qs[1],Qs[2]);
-  let W=Math.max(wTop,wBot),H=Math.max(hLeft,hRight);
-
-  // Bù tỷ lệ co ngắn phối cảnh 3D & chuẩn hóa nhẹ về khổ giấy hành chính A4 (1 : 1.4142) nếu độ lệch nằm trong ngưỡng phối cảnh
-  const foreshorten=Math.max(wTop/Math.max(1,wBot),wBot/Math.max(1,wTop),hLeft/Math.max(1,hRight),hRight/Math.max(1,hLeft));
-  if(foreshorten>1.04){
-    if(H>=W)H*=Math.min(1.18,Math.sqrt(foreshorten));
-    else W*=Math.min(1.18,Math.sqrt(foreshorten));
-  }
-  const ratio=Math.max(W,H)/Math.max(1,Math.min(W,H)),ISO_A4=Math.SQRT2;
-  if(Math.abs(ratio-ISO_A4)/ISO_A4<0.095){
-    if(H>=W)H=W*ISO_A4;else W=H*ISO_A4;
-  }
-  W=Math.max(10,Math.round(W));H=Math.max(10,Math.round(H));
-
-  const D=[[0,0],[W-1,0],[W-1,H-1],[0,H-1]],A=[];
-  for(let i=0;i<4;i++){const[x,y]=D[i],[X,Y]=Qs[i];A.push([x,y,1,0,0,0,-x*X,-y*X,X]);A.push([0,0,0,x,y,1,-x*Y,-y*Y,Y])}
-  for(let i=0;i<8;i++){
-    let p=i;for(let r=i+1;r<8;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;
-    [A[i],A[p]]=[A[p],A[i]];
-    const piv=A[i][i]||1e-12;
-    for(let r=0;r<8;r++)if(r!==i){const f=A[r][i]/piv;for(let k=i;k<9;k++)A[r][k]-=f*A[i][k]}
-  }
-  const k=A.map((r,i)=>r[8]/(r[i]||1e-12)),sw=c.width,sh=c.height,sd=c.getContext('2d').getImageData(0,0,sw,sh).data;
-  const o=mk(W,H),oc=o.getContext('2d'),od=oc.createImageData(W,H),dd=od.data;
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-    const w=k[6]*x+k[7]*y+1,X=(k[0]*x+k[1]*y+k[2])/w,Y=(k[3]*x+k[4]*y+k[5])/w,x0=Math.floor(X),y0=Math.floor(Y),i=(y*W+x)*4;
-    dd[i+3]=255;if(x0<0||y0<0||x0>=sw-1||y0>=sh-1){dd[i]=dd[i+1]=dd[i+2]=255;continue}
-    const fx=X-x0,fy=Y-y0,p=(y0*sw+x0)*4,q=p+sw*4;
-    for(let ch=0;ch<3;ch++)dd[i+ch]=sd[p+ch]*(1-fx)*(1-fy)+sd[p+4+ch]*fx*(1-fy)+sd[q+ch]*(1-fx)*fy+sd[q+4+ch]*fx*fy;
-  }
-  oc.putImageData(od,0,0);return o;
-}
-
-function autoCrop(c){
-  const q=detectDocQuad(c);
-  return q?warp(c,q):copy(c);
-}
-
-// Làm rõ chữ, khử bóng đổ nền giấy và giữ nguyên màu đỏ tươi của con dấu
-function enhance(c,mode){
-  const w=c.width,h=c.height,ctx=c.getContext('2d'),im=ctx.getImageData(0,0,w,h),d=im.data,f=8,sw=Math.ceil(w/f),sh=Math.ceil(h/f),sm=new Float32Array(sw*sh),cn=new Float32Array(sw*sh);
-  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=(y*w+x)*4,j=(y/f|0)*sw+(x/f|0);sm[j]+=(d[i]*77+d[i+1]*150+d[i+2]*29)/256;cn[j]++}
-  for(let j=0;j<sm.length;j++)sm[j]/=cn[j]||1;
-  const s=Math.min(w,h),bg=blur(sm,sw,sh,mode==='bw'?Math.max(2,Math.round(s/80*2/f)):Math.max(3,Math.round(s/10/f)));
-  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
-    const i=(y*w+x)*4,b=bg[(y/f|0)*sw+(x/f|0)];
-    if(mode==='bw'){
-      const l=(d[i]*77+d[i+1]*150+d[i+2]*29)/256,v=l>b-11?255:0;
-      d[i]=d[i+1]=d[i+2]=v;
-    }else{
-      const g=255/Math.max(b,45);
-      const r0=d[i],g0=d[i+1],b0=d[i+2];
-      // Bảo toàn độ bão hòa của con dấu đỏ (khi R vượt trội G và B)
-      const isRedStamp=(r0-g0>28&&r0-b0>20);
-      for(let ch=0;ch<3;ch++){
-        let v=(d[i+ch]*g-128)*(isRedStamp?1.18:1.28)+134;
-        d[i+ch]=v<0?0:v>255?255:v;
+  // 4. Trích xuất các ứng viên tứ giác từ mặt nạ + Bao lồi (Đã sửa lỗi chạm viền màn hình!)
+  const rawQuads=[];
+  for(const rawM of masks){
+    const{mask,area}=cleanMask(rawM,sw,sh);
+    if(area<N*0.10||area>N*0.98)continue;
+    const bnd=[];
+    for(let y=0;y<sh;y++){
+      const row=y*sw;
+      for(let x=0;x<sw;x++){
+        const i=row+x;if(!mask[i])continue;
+        // SỬA LỖI CHÍ MẠNG: Điểm chạm mép khung hình (x=0, x=sw-1, y=0, y=sh-1) VẪN LÀ ĐIỂM BIÊN!
+        if(x===0||x===sw-1||y===0||y===sh-1||!mask[i-1]||!mask[i+1]||!mask[i-sw]||!mask[i+sw])bnd.push([x,y]);
       }
     }
+    if(bnd.length<30)continue;
+    const H=convexHull(bnd);
+    for(const q0 of hullToQuads(H)){
+      rawQuads.push(q0);
+      rawQuads.push(refineQuadByEdges(q0,feat,9));
+    }
   }
-  ctx.putImageData(im,0,0);
-}
 
-// ---- 5. GIAO DIỆN & CHẾ ĐỘ CHỈNH TAY 4 GÓC KÈM KÍNH LÚP
-const setHint=t=>{$('#hint').textContent=t;$('#hint').hidden=false;$('#pv').hidden=true;$('#badge').hidden=true;$('#loupe').hidden=true};
+  // Bổ sung ứng viên từ bộ dò trực tiếp 4 đường biên tỷ lệ A4/A3
+  for(const dq of directA4A3EdgeQuads(feat))rawQuads.push(dq);
 
-function defaultInsetQuad(c){
-  const mX=c.width*0.06,mY=c.height*0.06;
-  return[[mX,mY],[c.width-mX,mY],[c.width-mX,c.height-mY],[mX,c.height-mY]];
-}
-
-async function loadFile(f){
-  try{
-    const img=new Image();img.src=URL.createObjectURL(f);await img.decode();
-    const k=Math.min(1,MAXL/Math.max(img.naturalWidth,img.naturalHeight));
-    raw=mk(Math.round(img.naturalWidth*k),Math.round(img.naturalHeight*k));
-    raw.getContext('2d').drawImage(img,0,0,raw.width,raw.height);
-    URL.revokeObjectURL(img.src);
-    rot=0;editingQuad=false;
-    setHint('Đang dò mép giấy AI…');await new Promise(r=>setTimeout(r,25));
-    const q=detectDocQuad(raw);
-    if(q){curQuad=q;isAutoQuad=true}else{curQuad=defaultInsetQuad(raw);isAutoQuad=false}
-    render();
-  }catch(e){toast('Không đọc được ảnh')}
-}
-
-function drawQuadEditor(focusPt){
-  if(!raw||!curQuad)return;
-  const p=$('#pv');p.width=raw.width;p.height=raw.height;
-  const ctx=p.getContext('2d');
-  ctx.drawImage(raw,0,0);
-  // Lớp phủ tối bên ngoài vùng chọn
-  ctx.fillStyle='rgba(0,0,0,0.42)';
-  ctx.beginPath();ctx.rect(0,0,p.width,p.height);
-  ctx.moveTo(curQuad[0][0],curQuad[0][1]);
-  for(let i=3;i>=0;i--)ctx.lineTo(curQuad[i][0],curQuad[i][1]);
-  ctx.closePath();ctx.fill();
-
-  // Đường viền xanh lá nối 4 góc
-  const lw=Math.max(3,Math.round(Math.max(p.width,p.height)/240));
-  ctx.strokeStyle='#00e676';ctx.lineWidth=lw;
-  ctx.beginPath();
-  curQuad.forEach((pt,i)=>i?ctx.lineTo(pt[0],pt[1]):ctx.moveTo(pt[0],pt[1]));
-  ctx.closePath();ctx.stroke();
-
-  // 4 nút kéo góc
-  const rad=Math.max(14,Math.round(Math.max(p.width,p.height)/55));
-  curQuad.forEach(pt=>{
-    ctx.beginPath();ctx.arc(pt[0],pt[1],rad,0,Math.PI*2);
-    ctx.fillStyle='rgba(0,230,118,0.28)';ctx.fill();
-    ctx.lineWidth=lw;ctx.strokeStyle='#fff';ctx.stroke();
-    ctx.beginPath();ctx.arc(pt[0],pt[1],Math.max(4,rad*0.25),0,Math.PI*2);
-    ctx.fillStyle='#00e676';ctx.fill();
-  });
-
-  // Hiển thị kính lúp phóng đại góc đang kéo
-  const lp=$('#loupe');
-  if(focusPt){
-    lp.hidden=false;
-    const lctx=lp.getContext('2d'),zoom=2.2,sz=96,half=sz/(2*zoom);
-    lctx.fillStyle='#111';lctx.fillRect(0,0,sz,sz);
-    lctx.drawImage(raw,focusPt[0]-half,focusPt[1]-half,half*2,half*2,0,0,sz,sz);
-    lctx.strokeStyle='#00e676';lctx.lineWidth=2;
-    lctx.beginPath();lctx.moveTo(sz/2-14,sz/2);lctx.lineTo(sz/2+14,sz/2);
-    lctx.moveTo(sz/2,sz/2-14);lctx.lineTo(sz/2,sz/2+14);lctx.stroke();
-  }else lp.hidden=true;
-}
-
-async function render(){
-  if(!raw)return;
-  if(editingQuad){
-    $('#pv').hidden=false;$('#hint').hidden=true;
-    $('#editQ').textContent='✓ Xong';$('#editQ').className='warn';
-    $('#badge').textContent='Kéo 4 chấm tròn vào đúng 4 góc giấy';$('#badge').hidden=false;
-    drawQuadEditor( null );return;
-  }
-  $('#editQ').textContent='📐 Góc';$('#editQ').className='';$('#loupe').hidden=true;
-  setHint('Đang xử lý ảnh…');await new Promise(r=>setTimeout(r,20));
-  try{
-    let c=($('#crop').checked&&curQuad&&(isAutoQuad||curQuad.manual))?warp(raw,curQuad):copy(raw);
-    for(let i=0;i<rot;i++)c=rot90(c);
-    enhance(c,$('#mode').value);proc=c;
-    const p=$('#pv');p.width=c.width;p.height=c.height;p.getContext('2d').drawImage(c,0,0);
-    p.hidden=false;$('#hint').hidden=true;
-    const b=$('#badge');
-    if($('#crop').checked){
-      b.textContent=curQuad?.manual?'✓ Đã cắt theo góc chỉnh tay':(isAutoQuad?'✓ Đã tự động cắt mép':'⚠ Giữ nguyên khung (bấm [📐 Góc] nếu cần)');
-      b.hidden=false;
-    }else b.hidden=true;
-    $('#save').disabled=$('#again').disabled=$('#rot').disabled=$('#editQ').disabled=false;
-    $('#save').textContent=retake!=null?`CẬP NHẬT TRANG ${retake+1}`:'LƯU ẢNH';
-  }catch(e){toast('Lỗi xử lý ảnh: '+e.message)}
-}
-
-// Sự kiện kéo thả 4 góc trên Canvas
-function canvasCoords(e){
-  const p=$('#pv'),r=p.getBoundingClientRect();
-  const cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
-  const cy=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
-  return[Math.max(0,Math.min(p.width,cx*p.width/r.width)),Math.max(0,Math.min(p.height,cy*p.height/r.height))];
-}
-const pCanvas=$('#pv');
-pCanvas.addEventListener('pointerdown',e=>{
-  if(!editingQuad||!curQuad)return;
-  pCanvas.setPointerCapture(e.pointerId);
-  const pt=canvasCoords(e);
-  let bestI=-1,bestD=1e9;
-  curQuad.forEach((q,i)=>{const d=dist(pt,q);if(d<bestD){bestD=d;bestI=i}});
-  if(bestD<Math.max(raw.width,raw.height)*0.15){dragIdx=bestI;curQuad[dragIdx]=pt;curQuad.manual=true;drawQuadEditor(pt)}
-});
-pCanvas.addEventListener('pointermove',e=>{
-  if(!editingQuad||dragIdx<0)return;
-  const pt=canvasCoords(e);
-  // Đặt vị trí kính lúp tránh ngón tay
-  const r=pCanvas.getBoundingClientRect(),lx=e.clientX-r.left;
-  $('#loupe').style.left=lx<r.width*0.45?'auto':'8px';
-  $('#loupe').style.right=lx<r.width*0.45?'8px':'auto';
-  curQuad[dragIdx]=pt;curQuad.manual=true;drawQuadEditor(pt);
-});
-pCanvas.addEventListener('pointerup',()=>{if(dragIdx>=0){dragIdx=-1;curQuad=orderQuad(curQuad);curQuad.manual=true;drawQuadEditor(null)}});
-
-$('#editQ').onclick=()=>{
-  if(!raw)return;
-  editingQuad=!editingQuad;
-  if(editingQuad)$('#crop').checked=true;
-  render();
-};
-
-function gallery(){
-  urls.forEach(u=>URL.revokeObjectURL(u));urls=[];
-  $('#cnt').textContent=`Đã lưu: ${S.pages.length} trang`;
-  const g=$('#gal');g.innerHTML='';
-  S.pages.forEach((b,i)=>{
-    const u=URL.createObjectURL(b);urls.push(u);
-    const d=document.createElement('div');d.className='card';
-    d.innerHTML=`<small>Trang ${i+1}</small><img src="${u}"><div><button data-r="${i}">📷</button><button data-d="${i}">🗑</button></div>`;
-    g.append(d);
-  });
-}
-$('#gal').onclick=e=>{
-  const r=e.target.dataset.r,d=e.target.dataset.d;
-  if(r!=null){retake=+r;setHint(`Đang CHỤP LẠI Trang ${+r+1}…`);$('#cam').click()}
-  else if(d!=null){S.pages.splice(+d,1);if(retake===+d)retake=null;save();gallery();toast(`Đã xóa Trang ${+d+1}`)}
-};
-$('#cap').onclick=$('#again').onclick=()=>$('#cam').click();
-$('#pick').onclick=()=>$('#lib').click();
-for(const id of['cam','lib'])$('#'+id).onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)loadFile(f)};
-$('#crop').onchange=$('#mode').onchange=()=>{editingQuad=false;render()};
-$('#rot').onclick=()=>{editingQuad=false;rot=(rot+1)%4;render()};
-$('#save').onclick=async()=>{
-  if(editingQuad){editingQuad=false;await render()}
-  if(!proc)return;
-  const b=await new Promise(r=>proc.toBlob(r,'image/jpeg',.92));
-  if(retake!=null){S.pages[retake]=b;toast(`Đã cập nhật Trang ${retake+1}`);retake=null}
-  else{S.pages.push(b);toast(`Đã lưu Trang ${S.pages.length}`)}
-  await save();raw=proc=curQuad=null;editingQuad=false;
-  setHint('Đã lưu! Nhấn [CHỤP ẢNH] để chụp trang tiếp theo.');
-  $('#save').disabled=$('#again').disabled=$('#rot').disabled=$('#editQ').disabled=true;
-  $('#save').textContent='LƯU ẢNH';gallery();
-};
-$('#new').onclick=async()=>{
-  if(!confirm('Xóa toàn bộ ảnh hiện tại để bắt đầu hồ sơ mới?'))return;
-  S.pages=[];retake=null;raw=proc=curQuad=null;editingQuad=false;await save();
-  setHint('Đã tạo hồ sơ mới. Nhấn [CHỤP ẢNH] để bắt đầu.');
-  $('#save').disabled=$('#again').disabled=$('#rot').disabled=$('#editQ').disabled=true;gallery();
-};
-
-// ---- 6. XUẤT PDF (TỰ GHÉP BINARY PDF CHUẨN A4)
-const clean=v=>v.trim().replace(/[<>:"/\\|?*]/g,''),fname=()=>`CHUACOGIAY_${clean($('#f_ma').value)||'[MÃ HỒ SƠ]'}_${clean($('#f_to').value)||'[SỐ TỜ]'}_${clean($('#f_thua').value)||'[SỐ THỬA]'}.pdf`;
-const upd=()=>{$('#fn').textContent=fname();$('#res').hidden=true};
-for(const id of['f_ma','f_to','f_thua'])$('#'+id).oninput=upd;
-$('#exp').onclick=()=>{if(!S.pages.length)return toast('Hãy lưu ít nhất 1 trang trước khi xuất PDF!');$('#f_ma').value=S.ma||'26784';$('#f_to').value=S.to;$('#f_thua').value=S.thua;upd();$('#modal').hidden=false};
-$('#close').onclick=()=>$('#modal').hidden=true;
-const dims=b=>new Promise((ok,no)=>{const i=new Image(),u=URL.createObjectURL(b);i.onload=()=>{URL.revokeObjectURL(u);ok([i.naturalWidth,i.naturalHeight])};i.onerror=no;i.src=u});
-
-async function buildPdf(blobs){
-  const enc=new TextEncoder(),parts=[],off=[];let pos=0;
-  const put=u=>{if(typeof u==='string')u=enc.encode(u);parts.push(u);pos+=u.length},begin=n=>{off[n]=pos;put(`${n} 0 obj\n`)};
-  put('%PDF-1.4\n');begin(1);put('<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
-  begin(2);put(`<< /Type /Pages /Kids [${blobs.map((_,i)=>`${3+i*3} 0 R`).join(' ')}] /Count ${blobs.length} >>\nendobj\n`);
-  for(let i=0;i<blobs.length;i++){
-    const[w,h]=await dims(blobs[i]),by=new Uint8Array(await blobs[i].arrayBuffer()),land=w>h,PW=land?841.89:595.28,PH=land?595.28:841.89,mg=14,
-      sc=Math.min((PW-2*mg)/w,(PH-2*mg)/h),dw=w*sc,dh=h*sc,x=(PW-dw)/2,y=(PH-dh)/2,pg=3+i*3,ct=pg+1,im=pg+2,cs=`q ${dw.toFixed(2)} 0 0 ${dh.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm /Im0 Do Q`;
-    begin(pg);put(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /XObject << /Im0 ${im} 0 R >> >> /Contents ${ct} 0 R >>\nendobj\n`);
-    begin(ct);put(`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream\nendobj\n`);
-    begin(im);put(`<< /Type /XObject /Subtype /Image /Width ${w} /Height ${h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${by.length} >>\nstream\n`);put(by);put('\nendstream\nendobj\n');
-  }
-  const N=3+blobs.length*3,xr=pos;put(`xref\n0 ${N}\n0000000000 65535 f \n`);for(let n=1;n<N;n++)put(String(off[n]).padStart(10,'0')+' 00000 n \n');
-  put(`trailer\n<< /Size ${N} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);return new Blob(parts,{type:'application/pdf'});
-}
-
-$('#go').onclick=async()=>{
-  const ma=clean($('#f_ma').value),to=clean($('#f_to').value),th=clean($('#f_thua').value);
-  if(!ma||!to||!th)return toast('Vui lòng nhập đầy đủ Mã hồ sơ, Số tờ và Số thửa!');
-  S.ma=ma;S.to=to;S.thua=th;save();$('#go').disabled=true;$('#go').textContent='Đang tạo PDF…';
-  try{
-    pdf={blob:await buildPdf(S.pages),name:fname()};$('#res').hidden=false;
-    $('#share').hidden=!(navigator.canShare&&navigator.canShare({files:[new File([pdf.blob],pdf.name,{type:'application/pdf'})]}));
-    toast('Xuất PDF thành công!');
-  }catch(e){toast('Xuất PDF thất bại: '+e.message)}
-  $('#go').disabled=false;$('#go').textContent='XUẤT FILE PDF';
-};
-$('#share').onclick=()=>navigator.share({files:[new File([pdf.blob],pdf.name,{type:'application/pdf'})],title:pdf.name}).catch(()=>{});
-$('#dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(pdf.blob);a.download=pdf.name;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)};
-(async()=>{try{const v=await kv('readonly',s=>s.get('s'));if(v)S=v}catch(e){}gallery()})();
-</script></body></html>
+  // 5. Với các ứng viên tốt nhất ban đầu, kích hoạt bộ tổng hợp cạnh thứ 4
