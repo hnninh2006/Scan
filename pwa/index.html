@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Scan Hồ Sơ"><meta name="theme-color" content="#1565c0">
+<title>Scan Hồ Sơ Đất Đai</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font:15px system-ui,sans-serif;padding:max(12px,env(safe-area-inset-top)) 12px max(16px,env(safe-area-inset-bottom));max-width:520px;margin:auto;color:#222}
+header{display:flex;justify-content:space-between;align-items:center;background:#e3f2fd;border-radius:8px;padding:10px;gap:8px}
+#box{height:290px;margin:10px 0;background:#eee;border:1px solid #bbb;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:6px;text-align:center;color:#666}
+#pv{max-width:100%;max-height:100%}
+.row{display:flex;gap:8px;margin:8px 0;align-items:center;flex-wrap:wrap}.row>button{flex:1}
+button,select{font:inherit;padding:12px;border-radius:8px;border:1px solid #1565c0;background:#fff;color:#1565c0}
+button:disabled{opacity:.45}.pri{background:#1976d2;color:#fff}.ok{background:#2e7d32;color:#fff;border-color:#2e7d32}.pdf{background:#c62828;color:#fff;border-color:#c62828;width:100%;padding:15px;font-weight:700}
+#gal{display:flex;gap:8px;overflow-x:auto;background:#f5f5f5;padding:6px;border-radius:8px;min-height:60px}
+.card{flex:none;background:#fff;border:1px solid #ddd;border-radius:6px;padding:4px;text-align:center}.card img{width:75px;height:75px;object-fit:cover;display:block}.card button{padding:4px 8px}
+#modal{position:fixed;inset:0;background:#0007;display:flex;align-items:flex-end;justify-content:center;z-index:5}#modal[hidden],#toast[hidden],#res[hidden]{display:none}
+.sheet{background:#fff;width:100%;max-width:520px;border-radius:14px 14px 0 0;padding:16px 16px max(16px,env(safe-area-inset-bottom))}
+.sheet label{display:block;margin:8px 0;font-size:13px}.sheet input{width:100%;font:inherit;padding:10px;margin-top:3px;border:1px solid #999;border-radius:6px}
+#toast{position:fixed;left:12px;right:12px;bottom:max(16px,env(safe-area-inset-bottom));background:#2e7d32;color:#fff;padding:12px;border-radius:8px;z-index:9}
+</style></head><body>
+<header><b>📄 SCAN HỒ SƠ ĐẤT ĐAI</b><b id="cnt"></b></header>
+<div id="box"><canvas id="pv" hidden></canvas><span id="hint">Nhấn [CHỤP ẢNH] để quét trang hồ sơ</span></div>
+<div class="row"><label><input type="checkbox" id="crop" checked> Tự cắt mép</label>
+<select id="mode"><option value="color">Màu (Rõ dấu)</option><option value="bw">Đen trắng</option></select>
+<button id="rot" disabled>⟳ Xoay 90°</button></div>
+<div class="row"><button class="pri" id="cap">📷 CHỤP ẢNH</button><button id="pick" style="flex:0">🖼</button></div>
+<div class="row"><button class="ok" id="save" disabled>LƯU ẢNH</button><button id="again" disabled>CHỤP LẠI</button></div>
+<b>Danh sách trang đã scan (đúng thứ tự PDF):</b><div id="gal"></div>
+<div class="row"><button id="new">HỒ SƠ MỚI</button></div>
+<button class="pdf" id="exp">CHUYỂN THÀNH PDF</button>
+<input type="file" id="cam" accept="image/*" capture="environment" hidden>
+<input type="file" id="lib" accept="image/*" hidden>
+<div id="modal" hidden><div class="sheet"><h3 style="margin:0">Nhập thông tin Hồ sơ Đất đai</h3>
+<label>Mã hồ sơ<input id="f_ma"></label>
+<label>Số tờ bản đồ (*)<input id="f_to" inputmode="numeric" placeholder="Ví dụ: 12"></label>
+<label>Số thứ tự thửa đất (*)<input id="f_thua" inputmode="numeric" placeholder="Ví dụ: 35"></label>
+<p style="font-size:13px">Tên file PDF sẽ tạo:<br><b id="fn" style="color:#1565c0"></b></p>
+<div id="res" class="row" hidden><button class="pri" id="share">Chia sẻ (Zalo…)</button><button id="dl">Tải xuống</button></div>
+<div class="row"><button id="close">Quay lại</button><button class="pdf" id="go" style="flex:2;width:auto">XUẤT FILE PDF</button></div></div></div>
+<div id="toast" hidden></div>
+<script>
+const $=s=>document.querySelector(s),mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
+const MAXL=2000,toast=m=>{const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2500)};
+let S={ma:'26784',to:'',thua:'',pages:[]},raw=null,proc=null,rot=0,retake=null,urls=[],pdf=null;
+// ---- lưu trữ bền vững (IndexedDB): tắt trình duyệt mở lại vẫn còn
+const db=new Promise((ok,no)=>{const r=indexedDB.open('landscan',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
+const kv=async(mode,fn)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction('kv',mode),q=fn(t.objectStore('kv'));t.oncomplete=()=>ok(q&&q.result);t.onerror=()=>no(t.error)})};
+const save=()=>kv('readwrite',s=>s.put(S,'s')).catch(()=>toast('Không lưu được dữ liệu cục bộ'));
+// ---- xử lý ảnh (thuần JS, không cần OpenCV)
+const copy=c=>{const o=mk(c.width,c.height);o.getContext('2d').drawImage(c,0,0);return o};
+const rot90=c=>{const o=mk(c.height,c.width),x=o.getContext('2d');x.translate(o.width,0);x.rotate(Math.PI/2);x.drawImage(c,0,0);return o};
+function blur(a,w,h,r){const t=new Float32Array(a.length),o=new Float32Array(a.length);
+ for(let y=0;y<h;y++){let s=0,n=0;const b=y*w;for(let x=0;x<=r&&x<w;x++){s+=a[b+x];n++}
+  for(let x=0;x<w;x++){t[b+x]=s/n;const ad=x+r+1,rm=x-r;if(ad<w){s+=a[b+ad];n++}if(rm>=0){s-=a[b+rm];n--}}}
+ for(let x=0;x<w;x++){let s=0,n=0;for(let y=0;y<=r&&y<h;y++){s+=t[y*w+x];n++}
+  for(let y=0;y<h;y++){o[y*w+x]=s/n;const ad=y+r+1,rm=y-r;if(ad<h){s+=t[ad*w+x];n++}if(rm>=0){s-=t[rm*w+x];n--}}}
+ return o}
+function otsu(g){const h=new Array(256).fill(0);for(const v of g)h[v]++;const T=g.length;let sa=0;for(let i=0;i<256;i++)sa+=i*h[i];
+ let wb=0,sb=0,best=-1,t=127;for(let i=0;i<256;i++){wb+=h[i];if(!wb)continue;const wf=T-wb;if(!wf)break;sb+=i*h[i];const d=sb/wb-(sa-sb)/wf,v=wb*wf*d*d;if(v>best){best=v;t=i}}return t}
+function warp(c,Q){const d=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+ const W=Math.max(1,Math.round(Math.max(d(Q[0],Q[1]),d(Q[3],Q[2])))),H=Math.max(1,Math.round(Math.max(d(Q[0],Q[3]),d(Q[1],Q[2]))));
+ const D=[[0,0],[W-1,0],[W-1,H-1],[0,H-1]],A=[];
+ for(let i=0;i<4;i++){const[x,y]=D[i],[X,Y]=Q[i];A.push([x,y,1,0,0,0,-x*X,-y*X,X]);A.push([0,0,0,x,y,1,-x*Y,-y*Y,Y])}
+ for(let i=0;i<8;i++){let p=i;for(let r=i+1;r<8;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;[A[i],A[p]]=[A[p],A[i]];
+  for(let r=0;r<8;r++)if(r!==i){const f=A[r][i]/A[i][i];for(let k=i;k<9;k++)A[r][k]-=f*A[i][k]}}
+ const k=A.map((r,i)=>r[8]/r[i]),sw=c.width,sh=c.height,sd=c.getContext('2d').getImageData(0,0,sw,sh).data;
+ const o=mk(W,H),oc=o.getContext('2d'),od=oc.createImageData(W,H),dd=od.data;
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const w=k[6]*x+k[7]*y+1,X=(k[0]*x+k[1]*y+k[2])/w,Y=(k[3]*x+k[4]*y+k[5])/w,x0=Math.floor(X),y0=Math.floor(Y),i=(y*W+x)*4;
+  dd[i+3]=255;if(x0<0||y0<0||x0>=sw-1||y0>=sh-1){dd[i]=dd[i+1]=dd[i+2]=255;continue}
+  const fx=X-x0,fy=Y-y0,p=(y0*sw+x0)*4,q=p+sw*4;
+  for(let ch=0;ch<3;ch++)dd[i+ch]=sd[p+ch]*(1-fx)*(1-fy)+sd[p+4+ch]*fx*(1-fy)+sd[q+ch]*(1-fx)*fy+sd[q+4+ch]*fx*fy}
+ oc.putImageData(od,0,0);return o}
+function autoCrop(c){const sh=400,sc=sh/c.height,sw=Math.max(1,Math.round(c.width*sc)),s=mk(sw,sh),sx=s.getContext('2d');sx.drawImage(c,0,0,sw,sh);
+ const px=sx.getImageData(0,0,sw,sh).data,g=new Float32Array(sw*sh);for(let i=0;i<g.length;i++)g[i]=(px[i*4]*77+px[i*4+1]*150+px[i*4+2]*29)/256;
+ const gb=blur(g,sw,sh,3),gu=Uint8Array.from(gb,v=>v),t=otsu(gu),m0=new Float32Array(sw*sh);for(let i=0;i<m0.length;i++)m0[i]=gu[i]>t?1:0;
+ const m=blur(m0,sw,sh,4);let n=0,mn=1e9,mx=-1e9,dn=1e9,dx=-1e9,tl,br,tr,bl;
+ for(let y=0;y<sh;y++)for(let x=0;x<sw;x++)if(m[y*sw+x]>.5){n++;const p=x+y,q=x-y;if(p<mn){mn=p;tl=[x,y]}if(p>mx){mx=p;br=[x,y]}if(q>dx){dx=q;tr=[x,y]}if(q<dn){dn=q;bl=[x,y]}}
+ const tot=sw*sh,fr=n/tot;if(fr<.25||fr>.97)return c;
+ const Q=[tl,tr,br,bl];let ar=0;for(let i=0;i<4;i++){const a=Q[i],b=Q[(i+1)%4];ar+=a[0]*b[1]-b[0]*a[1]}ar=Math.abs(ar)/2;
+ if(ar<tot*.25||n/ar<.6||n/ar>1.15)return c;
+ return warp(c,Q.map(p=>[p[0]/sc,p[1]/sc]))}
+function enhance(c,mode){const w=c.width,h=c.height,ctx=c.getContext('2d'),im=ctx.getImageData(0,0,w,h),d=im.data,f=8,sw=Math.ceil(w/f),sh=Math.ceil(h/f),sm=new Float32Array(sw*sh),cn=new Float32Array(sw*sh);
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=(y*w+x)*4,j=(y/f|0)*sw+(x/f|0);sm[j]+=(d[i]*77+d[i+1]*150+d[i+2]*29)/256;cn[j]++}
+ for(let j=0;j<sm.length;j++)sm[j]/=cn[j]||1;const s=Math.min(w,h),bg=blur(sm,sw,sh,mode==='bw'?Math.max(2,Math.round(s/80*2/f)):Math.max(3,Math.round(s/10/f)));
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=(y*w+x)*4,b=bg[(y/f|0)*sw+(x/f|0)];
+  if(mode==='bw'){const l=(d[i]*77+d[i+1]*150+d[i+2]*29)/256,v=l>b-10?255:0;d[i]=d[i+1]=d[i+2]=v}
+  else{const g=255/Math.max(b,40);for(let ch=0;ch<3;ch++)d[i+ch]=(d[i+ch]*g-128)*1.25+133}}
+ ctx.putImageData(im,0,0)}
+// ---- giao diện
+const setHint=t=>{$('#hint').textContent=t;$('#hint').hidden=false;$('#pv').hidden=true};
+async function loadFile(f){try{const img=new Image();img.src=URL.createObjectURL(f);await img.decode();const k=Math.min(1,MAXL/Math.max(img.naturalWidth,img.naturalHeight));
+ raw=mk(Math.round(img.naturalWidth*k),Math.round(img.naturalHeight*k));raw.getContext('2d').drawImage(img,0,0,raw.width,raw.height);URL.revokeObjectURL(img.src);rot=0;render()}catch(e){toast('Không đọc được ảnh')}}
+async function render(){if(!raw)return;setHint('Đang xử lý ảnh…');await new Promise(r=>setTimeout(r,30));
+ try{let c=$('#crop').checked?autoCrop(raw):raw;if(c===raw)c=copy(raw);for(let i=0;i<rot;i++)c=rot90(c);enhance(c,$('#mode').value);proc=c;
+  const p=$('#pv');p.width=c.width;p.height=c.height;p.getContext('2d').drawImage(c,0,0);p.hidden=false;$('#hint').hidden=true;
+  $('#save').disabled=$('#again').disabled=$('#rot').disabled=false;$('#save').textContent=retake!=null?`CẬP NHẬT TRANG ${retake+1}`:'LƯU ẢNH'}catch(e){toast('Lỗi xử lý ảnh: '+e.message)}}
+function gallery(){urls.forEach(u=>URL.revokeObjectURL(u));urls=[];$('#cnt').textContent=`Đã lưu: ${S.pages.length} trang`;const g=$('#gal');g.innerHTML='';
+ S.pages.forEach((b,i)=>{const u=URL.createObjectURL(b);urls.push(u);const d=document.createElement('div');d.className='card';
+  d.innerHTML=`<small>Trang ${i+1}</small><img src="${u}"><div><button data-r="${i}">📷</button><button data-d="${i}">🗑</button></div>`;g.append(d)})}
+$('#gal').onclick=e=>{const r=e.target.dataset.r,d=e.target.dataset.d;
+ if(r!=null){retake=+r;setHint(`Đang CHỤP LẠI Trang ${+r+1}…`);$('#cam').click()}
+ else if(d!=null){S.pages.splice(+d,1);if(retake===+d)retake=null;save();gallery();toast(`Đã xóa Trang ${+d+1}`)}};
+$('#cap').onclick=$('#again').onclick=()=>$('#cam').click();$('#pick').onclick=()=>$('#lib').click();
+for(const id of['cam','lib'])$('#'+id).onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)loadFile(f)};
+$('#crop').onchange=$('#mode').onchange=render;$('#rot').onclick=()=>{rot=(rot+1)%4;render()};
+$('#save').onclick=async()=>{if(!proc)return;const b=await new Promise(r=>proc.toBlob(r,'image/jpeg',.92));
+ if(retake!=null){S.pages[retake]=b;toast(`Đã cập nhật Trang ${retake+1}`);retake=null}else{S.pages.push(b);toast(`Đã lưu Trang ${S.pages.length}`)}
+ await save();raw=proc=null;setHint('Đã lưu! Nhấn [CHỤP ẢNH] để chụp trang tiếp theo.');$('#save').disabled=$('#again').disabled=$('#rot').disabled=true;$('#save').textContent='LƯU ẢNH';gallery()};
+$('#new').onclick=async()=>{if(!confirm('Xóa toàn bộ ảnh hiện tại để bắt đầu hồ sơ mới?'))return;S.pages=[];retake=null;raw=proc=null;await save();setHint('Đã tạo hồ sơ mới. Nhấn [CHỤP ẢNH] để bắt đầu.');gallery()};
+// ---- xuất PDF (tự ghép PDF, không cần thư viện)
+const clean=v=>v.trim().replace(/[<>:"/\\|?*]/g,''),fname=()=>`CHUACOGIAY_${clean($('#f_ma').value)||'[MÃ HỒ SƠ]'}_${clean($('#f_to').value)||'[SỐ TỜ]'}_${clean($('#f_thua').value)||'[SỐ THỬA]'}.pdf`;
+const upd=()=>{$('#fn').textContent=fname();$('#res').hidden=true};
+for(const id of['f_ma','f_to','f_thua'])$('#'+id).oninput=upd;
+$('#exp').onclick=()=>{if(!S.pages.length)return toast('Hãy lưu ít nhất 1 trang trước khi xuất PDF!');$('#f_ma').value=S.ma||'26784';$('#f_to').value=S.to;$('#f_thua').value=S.thua;upd();$('#modal').hidden=false};
+$('#close').onclick=()=>$('#modal').hidden=true;
+const dims=b=>new Promise((ok,no)=>{const i=new Image(),u=URL.createObjectURL(b);i.onload=()=>{URL.revokeObjectURL(u);ok([i.naturalWidth,i.naturalHeight])};i.onerror=no;i.src=u});
+async function buildPdf(blobs){const enc=new TextEncoder(),parts=[],off=[];let pos=0;
+ const put=u=>{if(typeof u==='string')u=enc.encode(u);parts.push(u);pos+=u.length},begin=n=>{off[n]=pos;put(`${n} 0 obj\n`)};
+ put('%PDF-1.4\n');begin(1);put('<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+ begin(2);put(`<< /Type /Pages /Kids [${blobs.map((_,i)=>`${3+i*3} 0 R`).join(' ')}] /Count ${blobs.length} >>\nendobj\n`);
+ for(let i=0;i<blobs.length;i++){const[w,h]=await dims(blobs[i]),by=new Uint8Array(await blobs[i].arrayBuffer()),land=w>h,PW=land?841.89:595.28,PH=land?595.28:841.89,mg=36*72/150,
+  sc=Math.min((PW-2*mg)/w,(PH-2*mg)/h),dw=w*sc,dh=h*sc,x=(PW-dw)/2,y=(PH-dh)/2,pg=3+i*3,ct=pg+1,im=pg+2,cs=`q ${dw.toFixed(2)} 0 0 ${dh.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm /Im0 Do Q`;
+  begin(pg);put(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /XObject << /Im0 ${im} 0 R >> >> /Contents ${ct} 0 R >>\nendobj\n`);
+  begin(ct);put(`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream\nendobj\n`);
+  begin(im);put(`<< /Type /XObject /Subtype /Image /Width ${w} /Height ${h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${by.length} >>\nstream\n`);put(by);put('\nendstream\nendobj\n')}
+ const N=3+blobs.length*3,xr=pos;put(`xref\n0 ${N}\n0000000000 65535 f \n`);for(let n=1;n<N;n++)put(String(off[n]).padStart(10,'0')+' 00000 n \n');
+ put(`trailer\n<< /Size ${N} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);return new Blob(parts,{type:'application/pdf'})}
+$('#go').onclick=async()=>{const ma=clean($('#f_ma').value),to=clean($('#f_to').value),th=clean($('#f_thua').value);
+ if(!ma||!to||!th)return toast('Vui lòng nhập đầy đủ Mã hồ sơ, Số tờ và Số thửa!');
+ S.ma=ma;S.to=to;S.thua=th;save();$('#go').disabled=true;$('#go').textContent='Đang tạo PDF…';
+ try{pdf={blob:await buildPdf(S.pages),name:fname()};$('#res').hidden=false;$('#share').hidden=!(navigator.canShare&&navigator.canShare({files:[new File([pdf.blob],pdf.name,{type:'application/pdf'})]}));toast('Xuất PDF thành công!')}
+ catch(e){toast('Xuất PDF thất bại: '+e.message)}$('#go').disabled=false;$('#go').textContent='XUẤT FILE PDF'};
+$('#share').onclick=()=>navigator.share({files:[new File([pdf.blob],pdf.name,{type:'application/pdf'})],title:pdf.name}).catch(()=>{});
+$('#dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(pdf.blob);a.download=pdf.name;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)};
+(async()=>{try{const v=await kv('readonly',s=>s.get('s'));if(v)S=v}catch(e){}gallery()})();
+</script></body></html>
