@@ -2,13 +2,14 @@
 name: Build iOS (Flet)
 
 on:
-  workflow_dispatch:   # bấm chạy tay trong tab Actions
-  push:
-    tags: ["v*"]       # hoặc tự chạy khi push tag, ví dụ v1.0.0
+  workflow_dispatch:   # Bấm chạy thủ công trong tab Actions
+  push:                # Tự chạy khi đẩy code lên nhánh main
+    branches: [ "main" ]
+    tags: ["v*"]
 
 env:
   PYTHON_VERSION: "3.12"
-  # PHẢI khớp với flet==... trong pyproject.toml
+  # PHẢI khớp với phiên bản flet trong requirements.txt / pyproject.toml
   FLET_VERSION: "0.27.6"
 
 jobs:
@@ -42,39 +43,21 @@ jobs:
           security create-keychain -p "tmp" "$KEYCHAIN"
           security set-keychain-settings -lut 21600 "$KEYCHAIN"
           security unlock-keychain -p "tmp" "$KEYCHAIN"
-          echo "$P12_BASE64" | base64 --decode > $RUNNER_TEMP/cert.p12
+          echo "$P12_BASE64" \vert{} base64 --decode > $RUNNER_TEMP/cert.p12
           security import $RUNNER_TEMP/cert.p12 -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
           security set-key-partition-list -S apple-tool:,apple: -k "tmp" "$KEYCHAIN"
           security list-keychains -d user -s "$KEYCHAIN" login.keychain
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           echo "$PROFILE_BASE64" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision
 
-      - name: Build iOS
+      - name: Build IPA
         env:
-          IOS_PROFILE_NAME: ${{ secrets.IOS_PROFILE_NAME }}   # tên hoặc UUID của provisioning profile
-          IOS_CERT_NAME: ${{ secrets.IOS_CERT_NAME }}         # tên certificate, vd "Apple Distribution: ..."
+          IOS_PROFILE_NAME: ${{ secrets.IOS_PROFILE_NAME }}
+          IOS_CERT_NAME: ${{ secrets.IOS_CERT_NAME }}
         run: |
           set -o pipefail
           ARGS=""
           if [ -n "$IOS_PROFILE_NAME" ] && [ -n "$IOS_CERT_NAME" ]; then
             ARGS="--ios-provisioning-profile \"$IOS_PROFILE_NAME\" --ios-signing-certificate \"$IOS_CERT_NAME\" --ios-export-method release-testing"
           fi
-          echo "y" | eval flet build ipa -v $ARGS 2>&1 | tee build.log
-
-      - name: Upload build output
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-build
-          path: |
-            build/ipa/**
-            build/**/*.xcarchive
-          if-no-files-found: warn
-
-      # Khi lỗi, tải log đầy đủ về để xem dòng lỗi thật
-      - name: Upload build log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log
-          path: build.log
+          echo "y" | eval flet build ipa -v $ARGS 2>&1 | tee
