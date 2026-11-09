@@ -666,4 +666,290 @@ function detectDocQuad(c){
   // Bổ sung ứng viên từ bộ dò trực tiếp 4 đường biên tỷ lệ A4/A3
   for(const dq of directA4A3EdgeQuads(feat))rawQuads.push(dq);
 
-  // 5. Với các ứng viên tốt nhất ban đầu, kích hoạt bộ tổng hợp cạnh thứ 4
+  // 5. Với các ứng viên tốt nhất ban đầu, kích hoạt bộ tổng hợp cạnh thứ 4 theo đúng hằng số A4/A3 (√2)
+  rawQuads.sort((a,b)=>scoreA4A3Quad(b,feat)-scoreA4A3Quad(a,feat));
+  const topSeeds=rawQuads.slice(0,4);
+  const allCandidates=rawQuads.slice(0,12);
+  for(const seed of topSeeds){
+    for(const synQ of synthesizeA4A3Candidates(seed,feat))allCandidates.push(synQ);
+  }
+
+  let bestQ=null,bestScore=-1e9;
+  for(const q of allCandidates){
+    const s=scoreA4A3Quad(q,feat);
+    if(s>bestScore){bestScore=s;bestQ=q}
+  }
+
+  if(!bestQ||bestScore<35)return null;
+  return bestQ.map(p=>[
+    Math.max(0,Math.min(c.width,p[0]/sc)),
+    Math.max(0,Math.min(c.height,p[1]/sc))
+  ]);
+}
+
+// ---- 4. BIẾN ĐỔI PHỐI CẢNH (HOMOGRAPHY WARP) KHÓA CỨNG TỶ LỆ CHUẨN A4/A3 (1 : √2)
+function warp(c,Q){
+  // Cắt lẹm viền 0.7% vào phía trong để triệt tiêu hoàn toàn viền bóng đen sát mép giấy
+  let cx=0,cy=0;for(const p of Q){cx+=p[0];cy+=p[1]}cx/=4;cy/=4;
+  const Qs=Q.map(p=>[p[0]+(cx-p[0])*0.007,p[1]+(cy-p[1])*0.007]);
+
+  const wTop=dist(Qs[0],Qs[1]),wBot=dist(Qs[3],Qs[2]);
+  const hLeft=dist(Qs[0],Qs[3]),hRight=dist(Qs[1],Qs[2]);
+  const wMax=Math.max(wTop,wBot),hMax=Math.max(hLeft,hRight);
+  const{portrait}=calc3DAspectRatio(Qs,c.width,c.height);
+
+  // Vì giấy đầu vào luôn là A4 hoặc A3 nên đầu ra sau khi nắn phẳng luôn có tỷ lệ chuẩn ISO 1 : √2
+  let W,H;
+  if(portrait){
+    H=Math.round(Math.max(hMax,wMax*ISO_RATIO));
+    W=Math.round(H/ISO_RATIO);
+  }else{
+    W=Math.round(Math.max(wMax,hMax*ISO_RATIO));
+    H=Math.round(W/ISO_RATIO);
+  }
+  W=Math.max(10,W);H=Math.max(10,H);
+
+  const D=[[0,0],[W-1,0],[W-1,H-1],[0,H-1]],A=[];
+  for(let i=0;i<4;i++){const[x,y]=D[i],[X,Y]=Qs[i];A.push([x,y,1,0,0,0,-x*X,-y*X,X]);A.push([0,0,0,x,y,1,-x*Y,-y*Y,Y])}
+  for(let i=0;i<8;i++){
+    let p=i;for(let r=i+1;r<8;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;
+    [A[i],A[p]]=[A[p],A[i]];
+    const piv=A[i][i]||1e-12;
+    for(let r=0;r<8;r++)if(r!==i){const f=A[r][i]/piv;for(let k=i;k<9;k++)A[r][k]-=f*A[i][k]}
+  }
+  const k=A.map((r,i)=>r[8]/(r[i]||1e-12)),sw=c.width,sh=c.height,sd=c.getContext('2d').getImageData(0,0,sw,sh).data;
+  const o=mk(W,H),oc=o.getContext('2d'),od=oc.createImageData(W,H),dd=od.data;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const w=k[6]*x+k[7]*y+1,X=(k[0]*x+k[1]*y+k[2])/w,Y=(k[3]*x+k[4]*y+k[5])/w,x0=Math.floor(X),y0=Math.floor(Y),i=(y*W+x)*4;
+    dd[i+3]=255;if(x0<0||y0<0||x0>=sw-1||y0>=sh-1){dd[i]=dd[i+1]=dd[i+2]=255;continue}
+    const fx=X-x0,fy=Y-y0,p=(y0*sw+x0)*4,q=p+sw*4;
+    for(let ch=0;ch<3;ch++)dd[i+ch]=sd[p+ch]*(1-fx)*(1-fy)+sd[p+4+ch]*fx*(1-fy)+sd[q+ch]*(1-fx)*fy+sd[q+4+ch]*fx*fy;
+  }
+  oc.putImageData(od,0,0);return o;
+}
+
+// Làm trắng nền giấy, sắc nét chữ và bảo toàn màu đỏ của con dấu
+function enhance(c,mode){
+  const w=c.width,h=c.height,ctx=c.getContext('2d'),im=ctx.getImageData(0,0,w,h),d=im.data,f=8,sw=Math.ceil(w/f),sh=Math.ceil(h/f),sm=new Float32Array(sw*sh),cn=new Float32Array(sw*sh);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=(y*w+x)*4,j=(y/f|0)*sw+(x/f|0);sm[j]+=(d[i]*77+d[i+1]*150+d[i+2]*29)/256;cn[j]++}
+  for(let j=0;j<sm.length;j++)sm[j]/=cn[j]||1;
+  const s=Math.min(w,h),bg=blur(sm,sw,sh,mode==='bw'?Math.max(2,Math.round(s/80*2/f)):Math.max(3,Math.round(s/10/f)));
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const i=(y*w+x)*4,b=bg[(y/f|0)*sw+(x/f|0)];
+    if(mode==='bw'){
+      const l=(d[i]*77+d[i+1]*150+d[i+2]*29)/256,v=l>b-11?255:0;
+      d[i]=d[i+1]=d[i+2]=v;
+    }else{
+      const g=255/Math.max(b,45),r0=d[i],g0=d[i+1],b0=d[i+2];
+      const isRedStamp=(r0-g0>26&&r0-b0>18);
+      for(let ch=0;ch<3;ch++){
+        let v=(d[i+ch]*g-128)*(isRedStamp?1.18:1.28)+134;
+        d[i+ch]=v<0?0:v>255?255:v;
+      }
+    }
+  }
+  ctx.putImageData(im,0,0);
+}
+
+// ---- 5. GIAO DIỆN & CHỈNH TAY 4 GÓC CÓ KÍNH LÚP
+const setHint=t=>{$('#hint').textContent=t;$('#hint').hidden=false;$('#pv').hidden=true;$('#badge').hidden=true;$('#loupe').hidden=true};
+
+function defaultA4Quad(c){
+  const w=c.width,h=c.height,land=w>h;
+  let qw=w*0.86,qh=land?qw/ISO_RATIO:qw*ISO_RATIO;
+  if(qh>h*0.86){qh=h*0.86;qw=land?qh*ISO_RATIO:qh/ISO_RATIO}
+  const x0=(w-qw)*0.5,y0=(h-qh)*0.5;
+  return[[x0,y0],[x0+qw,y0],[x0+qw,y0+qh],[x0,y0+qh]];
+}
+
+async function loadFile(f){
+  try{
+    const img=new Image();img.src=URL.createObjectURL(f);await img.decode();
+    const k=Math.min(1,MAXL/Math.max(img.naturalWidth,img.naturalHeight));
+    raw=mk(Math.round(img.naturalWidth*k),Math.round(img.naturalHeight*k));
+    raw.getContext('2d').drawImage(img,0,0,raw.width,raw.height);
+    URL.revokeObjectURL(img.src);
+    rot=0;editingQuad=false;
+    setHint('Đang nhận diện khung giấy chuẩn A4/A3…');await new Promise(r=>setTimeout(r,25));
+    const q=detectDocQuad(raw);
+    if(q){curQuad=q;isAutoQuad=true}else{curQuad=defaultA4Quad(raw);isAutoQuad=false}
+    render();
+  }catch(e){toast('Không đọc được ảnh')}
+}
+
+function drawQuadEditor(focusPt){
+  if(!raw||!curQuad)return;
+  const p=$('#pv');p.width=raw.width;p.height=raw.height;
+  const ctx=p.getContext('2d');
+  ctx.drawImage(raw,0,0);
+  ctx.fillStyle='rgba(0,0,0,0.45)';
+  ctx.beginPath();ctx.rect(0,0,p.width,p.height);
+  ctx.moveTo(curQuad[0][0],curQuad[0][1]);
+  for(let i=3;i>=0;i--)ctx.lineTo(curQuad[i][0],curQuad[i][1]);
+  ctx.closePath();ctx.fill();
+
+  const lw=Math.max(3,Math.round(Math.max(p.width,p.height)/240));
+  ctx.strokeStyle='#00e676';ctx.lineWidth=lw;
+  ctx.beginPath();
+  curQuad.forEach((pt,i)=>i?ctx.lineTo(pt[0],pt[1]):ctx.moveTo(pt[0],pt[1]));
+  ctx.closePath();ctx.stroke();
+
+  const rad=Math.max(14,Math.round(Math.max(p.width,p.height)/55));
+  curQuad.forEach(pt=>{
+    ctx.beginPath();ctx.arc(pt[0],pt[1],rad,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,230,118,0.28)';ctx.fill();
+    ctx.lineWidth=lw;ctx.strokeStyle='#fff';ctx.stroke();
+    ctx.beginPath();ctx.arc(pt[0],pt[1],Math.max(4,rad*0.25),0,Math.PI*2);
+    ctx.fillStyle='#00e676';ctx.fill();
+  });
+
+  const lp=$('#loupe');
+  if(focusPt){
+    lp.hidden=false;
+    const lctx=lp.getContext('2d'),zoom=2.3,sz=100,half=sz/(2*zoom);
+    lctx.fillStyle='#111';lctx.fillRect(0,0,sz,sz);
+    lctx.drawImage(raw,focusPt[0]-half,focusPt[1]-half,half*2,half*2,0,0,sz,sz);
+    lctx.strokeStyle='#00e676';lctx.lineWidth=2;
+    lctx.beginPath();lctx.moveTo(sz/2-14,sz/2);lctx.lineTo(sz/2+14,sz/2);
+    lctx.moveTo(sz/2,sz/2-14);lctx.lineTo(sz/2,sz/2+14);lctx.stroke();
+  }else lp.hidden=true;
+}
+
+async function render(){
+  if(!raw)return;
+  if(editingQuad){
+    $('#pv').hidden=false;$('#hint').hidden=true;
+    $('#editQ').textContent='✓ Xong';$('#editQ').className='warn';
+    $('#badge').textContent='Kéo 4 chấm tròn vào 4 góc tờ A4/A3';$('#badge').hidden=false;
+    drawQuadEditor(null);return;
+  }
+  $('#editQ').textContent='📐 Góc';$('#editQ').className='';$('#loupe').hidden=true;
+  setHint('Đang nắn phẳng chuẩn khổ A4/A3…');await new Promise(r=>setTimeout(r,20));
+  try{
+    let c=($('#crop').checked&&curQuad&&(isAutoQuad||curQuad.manual))?warp(raw,curQuad):copy(raw);
+    for(let i=0;i<rot;i++)c=rot90(c);
+    enhance(c,$('#mode').value);proc=c;
+    const p=$('#pv');p.width=c.width;p.height=c.height;p.getContext('2d').drawImage(c,0,0);
+    p.hidden=false;$('#hint').hidden=true;
+    const b=$('#badge');
+    if($('#crop').checked){
+      b.textContent=curQuad?.manual?'✓ Đã cắt chuẩn A4/A3 (Chỉnh tay)':(isAutoQuad?'✓ Đã tự động cắt chuẩn A4/A3 (1 : √2)':'⚠ Chưa rõ mép A4/A3 (Bấm [📐 Góc] để chỉnh)');
+      b.hidden=false;
+    }else b.hidden=true;
+    $('#save').disabled=$('#again').disabled=$('#rot').disabled=$('#editQ').disabled=false;
+    $('#save').textContent=retake!=null?`CẬP NHẬT TRANG ${retake+1}`:'LƯU ẢNH';
+  }catch(e){toast('Lỗi xử lý ảnh: '+e.message)}
+}
+
+function canvasCoords(e){
+  const p=$('#pv'),r=p.getBoundingClientRect();
+  const cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+  const cy=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
+  return[Math.max(0,Math.min(p.width,cx*p.width/r.width)),Math.max(0,Math.min(p.height,cy*p.height/r.height))];
+}
+const pCanvas=$('#pv');
+pCanvas.addEventListener('pointerdown',e=>{
+  if(!editingQuad||!curQuad)return;
+  pCanvas.setPointerCapture(e.pointerId);
+  const pt=canvasCoords(e);
+  let bestI=-1,bestD=1e9;
+  curQuad.forEach((q,i)=>{const d=dist(pt,q);if(d<bestD){bestD=d;bestI=i}});
+  if(bestD<Math.max(raw.width,raw.height)*0.16){dragIdx=bestI;curQuad[dragIdx]=pt;curQuad.manual=true;drawQuadEditor(pt)}
+});
+pCanvas.addEventListener('pointermove',e=>{
+  if(!editingQuad||dragIdx<0)return;
+  const pt=canvasCoords(e);
+  const r=pCanvas.getBoundingClientRect(),lx=e.clientX-r.left;
+  $('#loupe').style.left=lx<r.width*0.45?'auto':'8px';
+  $('#loupe').style.right=lx<r.width*0.45?'8px':'auto';
+  curQuad[dragIdx]=pt;curQuad.manual=true;drawQuadEditor(pt);
+});
+pCanvas.addEventListener('pointerup',()=>{if(dragIdx>=0){dragIdx=-1;curQuad=orderQuad(curQuad);curQuad.manual=true;drawQuadEditor(null)}});
+
+$('#editQ').onclick=()=>{
+  if(!raw)return;
+  editingQuad=!editingQuad;
+  if(editingQuad)$('#crop').checked=true;
+  render();
+};
+
+function gallery(){
+  urls.forEach(u=>URL.revokeObjectURL(u));urls=[];
+  $('#cnt').textContent=`Đã lưu: ${S.pages.length} trang`;
+  const g=$('#gal');g.innerHTML='';
+  S.pages.forEach((b,i)=>{
+    const u=URL.createObjectURL(b);urls.push(u);
+    const d=document.createElement('div');d.className='card';
+    d.innerHTML=`<small>Trang ${i+1}</small><img src="${u}"><div><button data-r="${i}">📷</button><button data-d="${i}">🗑</button></div>`;
+    g.append(d);
+  });
+}
+$('#gal').onclick=e=>{
+  const r=e.target.dataset.r,d=e.target.dataset.d;
+  if(r!=null){retake=+r;setHint(`Đang CHỤP LẠI Trang ${+r+1}…`);$('#cam').click()}
+  else if(d!=null){S.pages.splice(+d,1);if(retake===+d)retake=null;save();gallery();toast(`Đã xóa Trang ${+d+1}`)}
+};
+$('#cap').onclick=$('#again').onclick=()=>$('#cam').click();
+$('#pick').onclick=()=>$('#lib').click();
+for(const id of['cam','lib'])$('#'+id).onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)loadFile(f)};
+$('#crop').onchange=$('#mode').onchange=()=>{editingQuad=false;render()};
+$('#rot').onclick=()=>{editingQuad=false;rot=(rot+1)%4;render()};
+$('#save').onclick=async()=>{
+  if(editingQuad){editingQuad=false;await render()}
+  if(!proc)return;
+  const b=await new Promise(r=>proc.toBlob(r,'image/jpeg',.92));
+  if(retake!=null){S.pages[retake]=b;toast(`Đã cập nhật Trang ${retake+1}`);retake=null}
+  else{S.pages.push(b);toast(`Đã lưu Trang ${S.pages.length}`)}
+  await save();raw=proc=curQuad=null;editingQuad=false;
+  setHint('Đã lưu! Nhấn [CHỤP ẢNH] để chụp trang tiếp theo.');
+  $('#save').disabled=$('#again').disabled=$('#rot').disabled=$('#editQ').disabled=true;
+  $('#save').textContent='LƯU ẢNH';gallery();
+};
+$('#new').onclick=async()=>{
+  if(!confirm('Xóa toàn bộ ảnh hiện tại để bắt đầu hồ sơ mới?'))return;
+  S.pages=[];retake=null;raw=proc=curQuad=null;editingQuad=false;await save();
+  setHint('Đã tạo hồ sơ mới. Nhấn [CHỤP ẢNH] để bắt đầu.');
+  $('#save').disabled=$('#again').disabled=$('#rot').disabled=$('#editQ').disabled=true;gallery();
+};
+
+// ---- 6. XUẤT PDF HỖ TRỢ CẢ KHỔ A4 (210x297mm) VÀ A3 (297x420mm)
+const clean=v=>v.trim().replace(/[<>:"/\\|?*]/g,''),fname=()=>`CHUACOGIAY_${clean($('#f_ma').value)||'[MÃ HỒ SƠ]'}_${clean($('#f_to').value)||'[SỐ TỜ]'}_${clean($('#f_thua').value)||'[SỐ THỬA]'}.pdf`;
+const upd=()=>{$('#fn').textContent=fname();$('#res').hidden=true};
+for(const id of['f_ma','f_to','f_thua','f_paper'])$('#'+id).oninput=upd;
+$('#exp').onclick=()=>{if(!S.pages.length)return toast('Hãy lưu ít nhất 1 trang trước khi xuất PDF!');$('#f_ma').value=S.ma||'26784';$('#f_to').value=S.to;$('#f_thua').value=S.thua;upd();$('#modal').hidden=false};
+$('#close').onclick=()=>$('#modal').hidden=true;
+const dims=b=>new Promise((ok,no)=>{const i=new Image(),u=URL.createObjectURL(b);i.onload=()=>{URL.revokeObjectURL(u);ok([i.naturalWidth,i.naturalHeight])};i.onerror=no;i.src=u});
+
+async function buildPdf(blobs,paperType){
+  const enc=new TextEncoder(),parts=[],off=[];let pos=0;
+  const isA3=paperType==='A3';
+  const SHORT_PT=isA3?841.89:595.28,LONG_PT=isA3?1190.55:841.89;
+  const put=u=>{if(typeof u==='string')u=enc.encode(u);parts.push(u);pos+=u.length},begin=n=>{off[n]=pos;put(`${n} 0 obj\n`)};
+  put('%PDF-1.4\n');begin(1);put('<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+  begin(2);put(`<< /Type /Pages /Kids [${blobs.map((_,i)=>`${3+i*3} 0 R`).join(' ')}] /Count ${blobs.length} >>\nendobj\n`);
+  for(let i=0;i<blobs.length;i++){
+    const[w,h]=await dims(blobs[i]),by=new Uint8Array(await blobs[i].arrayBuffer()),land=w>h,PW=land?LONG_PT:SHORT_PT,PH=land?SHORT_PT:LONG_PT,mg=10,
+      sc=Math.min((PW-2*mg)/w,(PH-2*mg)/h),dw=w*sc,dh=h*sc,x=(PW-dw)/2,y=(PH-dh)/2,pg=3+i*3,ct=pg+1,im=pg+2,cs=`q ${dw.toFixed(2)} 0 0 ${dh.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm /Im0 Do Q`;
+    begin(pg);put(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /XObject << /Im0 ${im} 0 R >> >> /Contents ${ct} 0 R >>\nendobj\n`);
+    begin(ct);put(`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream\nendobj\n`);
+    begin(im);put(`<< /Type /XObject /Subtype /Image /Width ${w} /Height ${h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${by.length} >>\nstream\n`);put(by);put('\nendstream\nendobj\n');
+  }
+  const N=3+blobs.length*3,xr=pos;put(`xref\n0 ${N}\n0000000000 65535 f \n`);for(let n=1;n<N;n++)put(String(off[n]).padStart(10,'0')+' 00000 n \n');
+  put(`trailer\n<< /Size ${N} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);return new Blob(parts,{type:'application/pdf'});
+}
+
+$('#go').onclick=async()=>{
+  const ma=clean($('#f_ma').value),to=clean($('#f_to').value),th=clean($('#f_thua').value);
+  if(!ma||!to||!th)return toast('Vui lòng nhập đầy đủ Mã hồ sơ, Số tờ và Số thửa!');
+  S.ma=ma;S.to=to;S.thua=th;save();$('#go').disabled=true;$('#go').textContent='Đang tạo PDF…';
+  try{
+    pdf={blob:await buildPdf(S.pages,$('#f_paper').value),name:fname()};$('#res').hidden=false;
+    $('#share').hidden=!(navigator.canShare&&navigator.canShare({files:[new File([pdf.blob],pdf.name,{type:'application/pdf'})]}));
+    toast('Xuất PDF thành công!');
+  }catch(e){toast('Xuất PDF thất bại: '+e.message)}
+  $('#go').disabled=false;$('#go').textContent='XUẤT FILE PDF';
+};
+$('#share').onclick=()=>navigator.share({files:[new File([pdf.blob],pdf.name,{type:'application/pdf'})],title:pdf.name}).catch(()=>{});
+$('#dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(pdf.blob);a.download=pdf.name;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)};
+(async()=>{try{const v=await kv('readonly',s=>s.get('s'));if(v)S=v}catch(e){}gallery()})();
+</script></body></html>
