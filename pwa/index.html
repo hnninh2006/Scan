@@ -1,95 +1,671 @@
 <!doctype html>
-<html lang="vi"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Scan Hồ Sơ"><meta name="theme-color" content="#1565c0">
-<title>Scan Hồ Sơ Đất Đai (Giao Diện Dọc A4/A3)</title>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Scan Hồ Sơ">
+<meta name="theme-color" content="#0f172a">
+<title>Scan Hồ Sơ Đất Đai Pro (Chuẩn Dọc A4/A3)</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;font:14px system-ui,-apple-system,sans-serif;padding:max(8px,env(safe-area-inset-top)) 10px max(12px,env(safe-area-inset-bottom));max-width:440px;margin:auto;color:#222;background:#f8fafc;display:flex;flex-direction:column;min-height:100dvh}
-header{display:flex;justify-content:space-between;align-items:center;background:#1565c0;color:#fff;border-radius:10px;padding:10px 12px;gap:8px;box-shadow:0 2px 6px #0002}
-/* Khung hiển thị dọc chuẩn tỷ lệ giấy A4 (1 : 1.414) */
-#box{position:relative;width:100%;aspect-ratio:1/1.38;max-height:52dvh;margin:8px 0;background:#12161f;border:2px solid #90caf9;border-radius:12px;display:flex;align-items:center;justify-content:center;padding:6px;text-align:center;color:#cfd8dc;overflow:hidden;touch-action:pan-y}
-#box.editing{touch-action:none;border-color:#ef6c00}
-#pv,#liveVid{max-width:100%;max-height:100%;border-radius:6px;object-fit:contain}
-#a4guide{position:absolute;inset:14px;border:1.5px dashed #00e67688;border-radius:6px;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;color:#00e676cc;font-size:11px}
-#loupe{position:absolute;top:8px;left:8px;width:96px;height:96px;border:2.5px solid #00e676;border-radius:50%;box-shadow:0 4px 12px #000b;pointer-events:none;background:#000;z-index:3}
-.row{display:flex;gap:6px;margin:4px 0;align-items:center;flex-wrap:wrap}
-.row>*{flex:1}
-button,select,.btn-file{font:inherit;font-weight:600;padding:11px 8px;border-radius:8px;border:1px solid #1565c0;background:#fff;color:#1565c0;cursor:pointer;text-align:center;position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:4px;user-select:none;-webkit-user-select:none}
-/* Input file phủ trực tiếp lên nút bấm để không bao giờ bị trình duyệt chặn */
-.btn-file input[type="file"]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:100px}
-button:disabled{opacity:.42;cursor:default}
-.pri{background:#1976d2;color:#fff;border-color:#1976d2}
-.ok{background:#2e7d32;color:#fff;border-color:#2e7d32}
-.warn{background:#ef6c00;color:#fff;border-color:#ef6c00}
-.pdf{background:#c62828;color:#fff;border-color:#c62828;width:100%;padding:13px;font-weight:700;margin-top:4px}
-#gal{display:flex;gap:8px;overflow-x:auto;background:#eceff1;padding:6px;border-radius:8px;min-height:88px;align-items:center}
-.card{flex:none;background:#fff;border:1px solid #cfd8dc;border-radius:6px;padding:4px;text-align:center;box-shadow:0 1px 3px #0001}
-.card img{width:56px;height:78px;object-fit:cover;display:block;margin:2px auto;border:1px solid #eee}
-.card button{padding:3px 7px;font-size:12px}
-#modal{position:fixed;inset:0;background:#0008;display:flex;align-items:flex-end;justify-content:center;z-index:10}
-#modal[hidden],#toast[hidden],#res[hidden],#loupe[hidden],#pv[hidden],#liveVid[hidden],#hint[hidden],#badge[hidden],#a4guide[hidden]{display:none!important}
-.sheet{background:#fff;width:100%;max-width:440px;border-radius:16px 16px 0 0;padding:16px 16px max(16px,env(safe-area-inset-bottom))}
-.sheet label{display:block;margin:8px 0;font-size:13px;font-weight:600}
-.sheet input,.sheet select{width:100%;font:inherit;font-weight:400;padding:10px;margin-top:3px;border:1px solid #999;border-radius:6px}
-#toast{position:fixed;left:12px;right:12px;bottom:max(16px,env(safe-area-inset-bottom));background:#2e7d32;color:#fff;padding:11px;border-radius:8px;z-index:20;text-align:center;font-weight:600;box-shadow:0 4px 12px #0005;pointer-events:none}
-.badge{position:absolute;bottom:8px;left:8px;right:8px;background:#000c;color:#00e676;font-size:12px;padding:5px 8px;border-radius:6px;pointer-events:none;z-index:2}
-</style></head><body>
-<header><b>📄 SCAN HỒ SƠ A4/A3 (DỌC)</b><b id="cnt">Đã lưu: 0</b></header>
+:root {
+  --bg-dark: #090d16;
+  --panel-bg: rgba(15, 23, 42, 0.92);
+  --card-bg: #1e293b;
+  --border: rgba(148, 163, 184, 0.18);
+  --primary: #3b82f6;
+  --primary-grad: linear-gradient(135deg, #2563eb, #1d4ed8);
+  --emerald: #10b981;
+  --emerald-grad: linear-gradient(135deg, #059669, #047857);
+  --amber: #f59e0b;
+  --amber-grad: linear-gradient(135deg, #d97706, #b45309);
+  --danger-grad: linear-gradient(135deg, #e11d48, #be123c);
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+}
 
-<div id="box">
-  <video id="liveVid" playsinline autoplay muted hidden></video>
-  <canvas id="pv" hidden></canvas>
-  <div id="a4guide">Khung căn lề dọc chuẩn A4 / A3 (1 : √2)</div>
-  <canvas id="loupe" width="96" height="96" hidden></canvas>
-  <span id="badge" class="badge" hidden></span>
-  <span id="hint" style="padding:12px;line-height:1.4">Nhấn <b>[📷 CHỤP ẢNH]</b> bên dưới<br>để mở máy ảnh quét trang hồ sơ dọc</span>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100dvh;
+  font: 14px/1.45 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+body {
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 50% 0%, #172554 0%, #090d16 70%);
+  box-shadow: 0 0 40px rgba(0,0,0,0.8);
+}
+
+/* Header Kính Mờ Cố Định Trên Cùng */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: max(10px, env(safe-area-inset-top)) 14px 10px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.2px;
+}
+
+.brand-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--primary-grad);
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.45);
+}
+
+#cnt {
+  background: rgba(59, 130, 246, 0.18);
+  color: #60a5fa;
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* KHUNG XEM HỒ SƠ DỌC TRÀN MÀN HÌNH & CUỘN LÊN XUỐNG */
+#viewport {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 68dvh;
+  max-height: none;
+  overflow-y: auto;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #060911;
+  border-bottom: 1px solid var(--border);
+}
+
+#box {
+  position: relative;
+  width: 100%;
+  min-height: 68dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0;
+  touch-action: pan-y pinch-zoom;
+}
+
+#box.editing {
+  outline: 2px solid var(--amber);
+  outline-offset: -2px;
+}
+
+/* Ảnh & Video hiển thị dọc tràn 100% chiều ngang, giữ đủ 100% chiều dài tờ A4 */
+#pv, #liveVid {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  background: #fff;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.75);
+  transition: width 0.2s ease;
+}
+
+/* Chế độ phóng to 150% để soi rõ chữ nhỏ / số thửa */
+#box.zoom-lg #pv {
+  width: 150%;
+  max-width: none;
+}
+
+/* Chế độ thu vừa gọn trong 1 màn hình không cần cuộn */
+#box.fit-screen {
+  height: 68dvh;
+  justify-content: center;
+}
+#box.fit-screen #pv, #box.fit-screen #liveVid {
+  width: auto;
+  max-width: 100%;
+  max-height: 66dvh;
+  object-fit: contain;
+}
+
+/* Khung hướng dẫn căn lề A4 khi chưa chụp hoặc đang mở Camera */
+#a4guide {
+  position: relative;
+  width: calc(100% - 24px);
+  aspect-ratio: 1 / 1.4142;
+  margin: 12px auto;
+  border: 2px dashed rgba(16, 185, 129, 0.65);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.04) 0%, rgba(59, 130, 246, 0.04) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 14px;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Hiệu ứng tia laser quét dọc trên khung A4 trống */
+#a4guide::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #10b981, transparent);
+  box-shadow: 0 0 12px #10b981;
+  animation: scanline 3.2s ease-in-out infinite;
+}
+
+@keyframes scanline {
+  0%, 100% { top: 6%; opacity: 0.3; }
+  50% { top: 94%; opacity: 0.95; }
+}
+
+.guide-corners {
+  font-size: 11px;
+  font-weight: 600;
+  color: #34d399;
+  background: rgba(6, 78, 59, 0.65);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+#hint {
+  text-align: center;
+  color: #cbd5e1;
+  font-size: 14px;
+  line-height: 1.55;
+  max-width: 290px;
+  margin: auto;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+}
+
+/* Kính lúp soi góc */
+#loupe {
+  position: fixed;
+  top: 64px;
+  left: 14px;
+  width: 112px;
+  height: 112px;
+  border: 3px solid #10b981;
+  border-radius: 50%;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.85);
+  pointer-events: none;
+  background: #000;
+  z-index: 40;
+}
+
+/* Thanh nổi HUD trên ảnh (Trạng thái + Nút đổi chế độ tràn màn hình) */
+.hud-bar {
+  position: sticky;
+  top: 8px;
+  z-index: 20;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px;
+  pointer-events: none;
+  margin-bottom: -36px;
+}
+
+.badge {
+  background: rgba(9, 13, 22, 0.82);
+  backdrop-filter: blur(10px);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  pointer-events: auto;
+}
+
+.zoom-pill {
+  pointer-events: auto;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(10px);
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+}
+
+/* BẢNG ĐIỀU KHIỂN CHỨC NĂNG BÊN DƯỚI */
+.controls-panel {
+  position: sticky;
+  bottom: 0;
+  z-index: 25;
+  background: var(--panel-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 10px 12px max(14px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.row > * { flex: 1; }
+
+button, select, .btn-file {
+  font: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 11px 10px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform 0.12s ease, background 0.15s ease, opacity 0.15s ease;
+}
+
+button:active:not(:disabled), .btn-file:active {
+  transform: scale(0.97);
+}
+
+.btn-file input[type="file"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  font-size: 100px;
+}
+
+button:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.chip-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  padding: 9px 8px;
+  border-radius: 11px;
+  font-weight: 600;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.chip-check input {
+  accent-color: var(--primary);
+  width: 15px;
+  height: 15px;
+  margin: 0;
+}
+
+.pri {
+  background: var(--primary-grad);
+  color: #fff;
+  border-color: rgba(96, 165, 250, 0.4);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.ok {
+  background: var(--emerald-grad);
+  color: #fff;
+  border-color: rgba(52, 211, 153, 0.4);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+.warn {
+  background: var(--amber-grad);
+  color: #fff;
+  border-color: rgba(251, 191, 36, 0.45);
+}
+
+.pdf {
+  background: var(--danger-grad);
+  color: #fff;
+  border-color: rgba(251, 113, 133, 0.4);
+  width: 100%;
+  padding: 13px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  box-shadow: 0 4px 16px rgba(225, 29, 72, 0.35);
+}
+
+/* KHU VỰC DANH SÁCH TRANG ĐÃ LƯU */
+.gal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+#gal {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  background: rgba(9, 13, 22, 0.65);
+  border: 1px solid var(--border);
+  padding: 8px;
+  border-radius: 12px;
+  min-height: 106px;
+  align-items: center;
+}
+
+#gal:empty::before {
+  content: "Chưa có trang nào. Hãy chụp trang đầu tiên!";
+  color: #64748b;
+  font-size: 12.5px;
+  margin: auto;
+}
+
+.card {
+  flex: none;
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 9px;
+  padding: 5px;
+  text-align: center;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.card.active-card {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+}
+
+.card small {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #cbd5e1;
+  margin-bottom: 3px;
+}
+
+.card img {
+  width: 62px;
+  height: 88px;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto 5px;
+  border-radius: 5px;
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  background: #fff;
+}
+
+.card-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.card button {
+  padding: 4px 7px;
+  font-size: 11px;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.8);
+}
+
+/* MODAL XUẤT PDF */
+#modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 50;
+}
+
+#modal[hidden], #toast[hidden], #res[hidden], #loupe[hidden], #pv[hidden], #liveVid[hidden], #hint[hidden], #badge[hidden], #a4guide[hidden], #zoomBtn[hidden] {
+  display: none !important;
+}
+
+.sheet {
+  background: #0f172a;
+  border-top: 1px solid rgba(148, 163, 184, 0.25);
+  color: var(--text);
+  width: 100%;
+  max-width: 500px;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 18px max(20px, env(safe-area-inset-bottom));
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.6);
+}
+
+.sheet h3 {
+  margin: 0 0 12px;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sheet label {
+  display: block;
+  margin: 10px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.sheet input, .sheet select {
+  width: 100%;
+  font: inherit;
+  font-weight: 500;
+  padding: 11px 12px;
+  margin-top: 5px;
+  background: #1e293b;
+  color: #fff;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 10px;
+  outline: none;
+}
+
+.sheet input:focus, .sheet select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.fn-box {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px dashed rgba(96, 165, 250, 0.4);
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin: 12px 0;
+  font-size: 12.5px;
+}
+
+#toast {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  top: max(18px, env(safe-area-inset-top));
+  max-width: 420px;
+  margin: 0 auto;
+  background: rgba(16, 185, 129, 0.95);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 12px;
+  z-index: 60;
+  text-align: center;
+  font-weight: 600;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">📄</div>
+    <span>SCAN HỒ SƠ ĐẤT ĐAI</span>
+  </div>
+  <span id="cnt">Đã lưu: 0 trang</span>
+</header>
+
+<!-- KHUNG HIỂN THỊ DỌC TRÀN MÀN HÌNH & CUỘN LÊN XUỐNG -->
+<div id="viewport">
+  <div class="hud-bar">
+    <span id="badge" class="badge" hidden></span>
+    <button type="button" id="zoomBtn" class="zoom-pill" hidden>↕ Tràn màn (Cuộn dọc)</button>
+  </div>
+
+  <div id="box">
+    <video id="liveVid" playsinline autoplay muted hidden></video>
+    <canvas id="pv" hidden></canvas>
+
+    <div id="a4guide">
+      <span class="guide-corners">⬆ Mép trên tờ A4 / A3 (1 : √2)</span>
+      <div id="hint">
+        Nhấn <b>[📷 CHỤP ẢNH]</b> bên dưới để quét.<br>
+        <small style="color:#94a3b8">Ảnh sau khi chụp sẽ hiển thị dọc tràn màn hình, vuốt lên xuống để xem trọn tờ giấy.</small>
+      </div>
+      <span class="guide-corners">⬇ Mép dưới tờ A4 / A3</span>
+    </div>
+
+    <canvas id="loupe" width="112" height="112" hidden></canvas>
+  </div>
 </div>
 
-<div class="row">
-  <label style="display:flex;align-items:center;gap:4px;flex:1.1;font-weight:600;font-size:13px"><input type="checkbox" id="crop" checked> Tự cắt A4/A3</label>
-  <button type="button" id="editQ" disabled style="flex:0.8;padding:9px 6px">📐 Góc</button>
-  <select id="mode" style="flex:1.2;padding:9px 4px"><option value="color">Màu (Rõ dấu)</option><option value="bw">Đen trắng</option></select>
-  <button type="button" id="rot" disabled style="flex:0.6;padding:9px 6px">⟳ 90°</button>
+<!-- BẢNG ĐIỀU KHIỂN THAO TÁC NHANH -->
+<div class="controls-panel">
+  <div class="row">
+    <label class="chip-check" style="flex:1.15">
+      <input type="checkbox" id="crop" checked> Tự cắt A4/A3
+    </label>
+    <button type="button" id="editQ" disabled style="flex:0.85;padding:9px 6px">📐 Góc</button>
+    <select id="mode" style="flex:1.25;padding:9px 6px">
+      <option value="color">🎨 Màu (Rõ dấu)</option>
+      <option value="bw">⚫ Đen trắng</option>
+    </select>
+    <button type="button" id="rot" disabled style="flex:0.65;padding:9px 6px">⟳ 90°</button>
+  </div>
+
+  <div class="row">
+    <label class="btn-file pri" id="capLbl" style="flex:1.65">
+      <span id="capTxt">📷 CHỤP ẢNH</span>
+      <input type="file" id="cam" accept="image/*" capture="environment">
+    </label>
+    <button type="button" id="liveBtn" style="flex:0.95" title="Mở camera trực tiếp trên khung dọc">🎥 Cam</button>
+    <label class="btn-file" style="flex:0.55" title="Chọn ảnh từ thư viện">
+      🖼
+      <input type="file" id="lib" accept="image/*">
+    </label>
+  </div>
+
+  <div class="row">
+    <button type="button" class="ok" id="save" disabled style="flex:1.3">✓ LƯU TRANG</button>
+    <label class="btn-file" id="againLbl" style="flex:1;opacity:.38;pointer-events:none">
+      🔄 CHỤP LẠI
+      <input type="file" id="camAgain" accept="image/*" capture="environment">
+    </label>
+  </div>
+
+  <div class="gal-header">
+    <b>Các trang A4 dọc đã lưu (Chạm vào ảnh để xem):</b>
+    <button type="button" id="new" style="padding:4px 10px;font-size:11.5px;border-radius:8px;flex:none">✨ Hồ sơ mới</button>
+  </div>
+
+  <div id="gal"></div>
+
+  <button type="button" class="pdf" id="exp">📄 XUẤT HỒ SƠ PDF (A4 / A3)</button>
 </div>
 
-<!-- Hàng nút chụp ảnh dùng thẻ <label> bọc trực tiếp <input type="file"> để ăn 100% trên mọi điện thoại -->
-<div class="row">
-  <label class="btn-file pri" id="capLbl" style="flex:1.6">
-    <span id="capTxt">📷 CHỤP ẢNH</span>
-    <input type="file" id="cam" accept="image/*" capture="environment">
-  </label>
-  <button type="button" id="liveBtn" style="flex:0.9" title="Mở camera trực tiếp trên khung dọc">🎥 Cam</button>
-  <label class="btn-file" style="flex:0.5" title="Chọn ảnh từ thư viện">
-    🖼
-    <input type="file" id="lib" accept="image/*">
-  </label>
+<!-- HỘP THOẠI XUẤT PDF -->
+<div id="modal" hidden>
+  <div class="sheet">
+    <h3>📁 Xuất Hồ Sơ Đất Đai (PDF Chuẩn Dọc)</h3>
+    <label>Mã hồ sơ
+      <input id="f_ma" placeholder="Ví dụ: 26784">
+    </label>
+    <div class="row">
+      <label style="flex:1">Số tờ bản đồ (*)
+        <input id="f_to" inputmode="numeric" placeholder="VD: 12">
+      </label>
+      <label style="flex:1">Số thửa đất (*)
+        <input id="f_thua" inputmode="numeric" placeholder="VD: 35">
+      </label>
+    </div>
+    <label>Khổ giấy xuất PDF
+      <select id="f_paper">
+        <option value="A4">Chuẩn A4 Dọc (210 × 297 mm)</option>
+        <option value="A3">Chuẩn A3 Dọc (297 × 420 mm)</option>
+      </select>
+    </label>
+    <div class="fn-box">
+      Tên file PDF sẽ tạo:<br>
+      <b id="fn" style="color:#60a5fa;word-break:break-all"></b>
+    </div>
+    <div id="res" class="row" style="margin-bottom:8px" hidden>
+      <button type="button" class="pri" id="share">📤 Chia sẻ (Zalo…)</button>
+      <button type="button" class="ok" id="dl">⬇ Tải xuống máy</button>
+    </div>
+    <div class="row">
+      <button type="button" id="close" style="flex:1">Đóng</button>
+      <button type="button" class="pdf" id="go" style="flex:2;width:auto;margin:0">⚡ TẠO FILE PDF</button>
+    </div>
+  </div>
 </div>
 
-<div class="row">
-  <button type="button" class="ok" id="save" disabled>✓ LƯU TRANG</button>
-  <label class="btn-file" id="againLbl" style="opacity:.42;pointer-events:none">
-    🔄 CHỤP LẠI
-    <input type="file" id="camAgain" accept="image/*" capture="environment">
-  </label>
-</div>
-
-<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
-  <b style="font-size:13px">Các trang A4 dọc đã lưu:</b>
-  <button type="button" id="new" style="padding:4px 8px;font-size:12px">Hồ sơ mới</button>
-</div>
-<div id="gal"></div>
-<button type="button" class="pdf" id="exp">📄 CHUYỂN THÀNH PDF</button>
-
-<div id="modal" hidden><div class="sheet"><h3 style="margin:0">Nhập thông tin Hồ sơ Đất đai</h3>
-<label>Mã hồ sơ<input id="f_ma"></label>
-<label>Số tờ bản đồ (*)<input id="f_to" inputmode="numeric" placeholder="Ví dụ: 12"></label>
-<label>Số thứ tự thửa đất (*)<input id="f_thua" inputmode="numeric" placeholder="Ví dụ: 35"></label>
-<label>Khổ giấy xuất PDF<select id="f_paper"><option value="A4">Chuẩn A4 Dọc (210 × 297 mm)</option><option value="A3">Chuẩn A3 (297 × 420 mm)</option></select></label>
-<p style="font-size:13px;margin:8px 0">Tên file PDF sẽ tạo:<br><b id="fn" style="color:#1565c0;word-break:break-all"></b></p>
-<div id="res" class="row" hidden><button type="button" class="pri" id="share">Chia sẻ (Zalo…)</button><button type="button" id="dl">Tải xuống</button></div>
-<div class="row"><button type="button" id="close">Quay lại</button><button type="button" class="pdf" id="go" style="flex:2;width:auto;margin:0">XUẤT FILE PDF</button></div></div></div>
 <div id="toast" hidden></div>
 
 <script>
@@ -98,13 +674,28 @@ const ISO_RATIO=Math.SQRT2; // Tỷ lệ chuẩn giấy A4 / A3: √2 ≈ 1.4142
 const MAXL=2000,toast=m=>{const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2600)};
 let S={ma:'26784',to:'',thua:'',pages:[]},raw=null,proc=null,rot=0,retake=null,urls=[],pdf=null;
 let curQuad=null,isAutoQuad=false,editingQuad=false,dragIdx=-1,liveStream=null;
+let viewMode='full'; // 'full' (Tràn màn cuộn dọc) | 'zoom' (Phóng to 150%) | 'fit' (Vừa khung)
 
-// ---- 1. LƯU TRỮ BỀN VỮNG (IndexedDB)
+// ---- 1. CHẾ ĐỘ XEM TRÀN MÀN HÌNH & LĂN LÊN XUỐNG
+const VIEW_LABELS={
+  full:'↕ Tràn màn (Cuộn dọc)',
+  zoom:'🔍 Phóng to 150%',
+  fit:'⊡ Vừa khung màn hình'
+};
+$('#zoomBtn').onclick=()=>{
+  viewMode=viewMode==='full'?'zoom':viewMode==='zoom'?'fit':'full';
+  const b=$('#box');
+  b.classList.toggle('zoom-lg',viewMode==='zoom');
+  b.classList.toggle('fit-screen',viewMode==='fit');
+  $('#zoomBtn').textContent=VIEW_LABELS[viewMode];
+};
+
+// ---- 2. LƯU TRỮ BỀN VỮNG (IndexedDB)
 const db=new Promise((ok,no)=>{const r=indexedDB.open('landscan',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
 const kv=async(mode,fn)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction('kv',mode),q=fn(t.objectStore('kv'));t.oncomplete=()=>ok(q&&q.result);t.onerror=()=>no(t.error)})};
 const save=()=>kv('readwrite',s=>s.put(S,'s')).catch(()=>toast('Không lưu được dữ liệu cục bộ'));
 
-// ---- 2. TOÁN HỌC HÌNH HỌC PHỐI CẢNH A4/A3 & XỬ LÝ ẢNH CƠ SỞ
+// ---- 3. TOÁN HỌC HÌNH HỌC PHỐI CẢNH A4/A3 & XỬ LÝ ẢNH CƠ SỞ
 const copy=c=>{const o=mk(c.width,c.height);o.getContext('2d').drawImage(c,0,0);return o};
 const rot90=c=>{const o=mk(c.height,c.width),x=o.getContext('2d');x.translate(o.width,0);x.rotate(Math.PI/2);x.drawImage(c,0,0);return o};
 const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
@@ -150,7 +741,6 @@ function orderQuad(Q){
   return[C[tl],C[(tl+1)%4],C[(tl+2)%4],C[(tl+3)%4]];
 }
 
-// ĐÃ SỬA DẤU TÍCH CÓ HƯỚNG: Tính chính xác tỷ lệ 3D thực tế của tờ giấy A4/A3 (k1=k2=k3=1 trên hình chữ nhật phẳng)
 function calc3DAspectRatio(Q,w,h){
   const cx=w*0.5,cy=h*0.5,f=Math.max(w,h)*0.95;
   const m=Q.map(p=>[p[0]-cx,p[1]-cy,1]);
@@ -213,7 +803,7 @@ function intersectLines(L1,L2,fallback){
   return(!fallback||dist([x,y],fallback)<95)?[x,y]:fallback;
 }
 
-// ---- 3. LÕI PHÁT HIỆN GIẤY A4/A3 DỌC (CHỐNG BẮT NHẦM BẢNG BIỂU + KHÔI PHỤC CẠNH THỨ 4 THEO √2)
+// ---- 4. LÕI PHÁT HIỆN GIẤY A4/A3 DỌC
 function cleanMask(mask,w,h){
   const vis=new Int32Array(w*h),q=new Int32Array(w*h);
   let bestId=0,bestScore=-1,id=0;
@@ -669,7 +1259,7 @@ function detectDocQuad(c){
   ]);
 }
 
-// ---- 4. BIẾN ĐỔI PHỐI CẢNH & TỰ ĐỘNG XOAY CHUẨN KHỔ DỌC A4/A3 (1 : √2)
+// ---- 5. BIẾN ĐỔI PHỐI CẢNH & TỰ ĐỘNG DỰNG DỌC KHỔ A4/A3 (1 : √2)
 function warp(c,Q){
   let cx=0,cy=0;for(const p of Q){cx+=p[0];cy+=p[1]}cx/=4;cy/=4;
   const Qs=Q.map(p=>[p[0]+(cx-p[0])*0.007,p[1]+(cy-p[1])*0.007]);
@@ -706,7 +1296,6 @@ function warp(c,Q){
     for(let ch=0;ch<3;ch++)dd[i+ch]=sd[p+ch]*(1-fx)*(1-fy)+sd[p+4+ch]*fx*(1-fy)+sd[q+ch]*(1-fx)*fy+sd[q+4+ch]*fx*fy;
   }
   oc.putImageData(od,0,0);
-  // Tự động dựng dọc trang giấy nếu cảm biến điện thoại lưu ảnh nằm ngang
   return o.width>o.height?rot90(o):o;
 }
 
@@ -732,7 +1321,7 @@ function enhance(c,mode){
   ctx.putImageData(im,0,0);
 }
 
-// ---- 5. NẠP ẢNH AN TOÀN TRÊN DI ĐỘNG & CAMERA TRỰC TIẾP TRONG KHUNG DỌC
+// ---- 6. NẠP ẢNH AN TOÀN & CAMERA TRỰC TIẾP TRONG KHUNG DỌC
 function stopLiveCam(){
   if(liveStream){liveStream.getTracks().forEach(t=>t.stop());liveStream=null}
   $('#liveVid').hidden=true;
@@ -743,7 +1332,8 @@ function stopLiveCam(){
 const setHint=t=>{
   stopLiveCam();
   $('#hint').innerHTML=t;$('#hint').hidden=false;
-  $('#pv').hidden=true;$('#badge').hidden=true;$('#loupe').hidden=true;$('#a4guide').hidden=false;
+  $('#pv').hidden=true;$('#badge').hidden=true;$('#loupe').hidden=true;
+  $('#zoomBtn').hidden=true;$('#a4guide').hidden=false;
   $('#box').classList.remove('editing');
 };
 
@@ -755,7 +1345,6 @@ function defaultA4Quad(c){
   return[[x0,y0],[x0+qw,y0],[x0+qw,y0+qh],[x0,y0+qh]];
 }
 
-// Nạp file ảnh an toàn bằng onload (không dùng img.decode() gây lỗi trên ảnh dọc HEIC/JPEG 48MP của iOS/Android)
 function readImageElement(file){
   return new Promise((ok,no)=>{
     const url=URL.createObjectURL(file);
@@ -774,20 +1363,20 @@ function readImageElement(file){
 
 async function processRawCanvas(c){
   stopLiveCam();
-  // Nếu ảnh chụp từ camera bị xoay ngang (width > height), tự động dựng dọc về chuẩn giao diện dọc
   raw=c.width>c.height?rot90(c):c;
   rot=0;editingQuad=false;
   setHint('Đang nhận diện mép giấy A4/A3 dọc…');
   await new Promise(r=>setTimeout(r,25));
   const q=detectDocQuad(raw);
   if(q){curQuad=q;isAutoQuad=true}else{curQuad=defaultA4Quad(raw);isAutoQuad=false}
-  render();
+  await render();
+  $('#viewport').scrollTo({top:0,behavior:'smooth'});
 }
 
 async function loadFile(f){
   if(!f)return;
   try{
-    setHint('Đang đọc ảnh từ máy…');
+    setHint('Đang đọc ảnh độ phân giải cao…');
     const img=await readImageElement(f);
     const w0=img.naturalWidth||img.width,h0=img.naturalHeight||img.height;
     const k=Math.min(1,MAXL/Math.max(w0,h0));
@@ -799,11 +1388,10 @@ async function loadFile(f){
   }
 }
 
-// Chế độ mở Camera trực tiếp ngay trong khung dọc A4 (nếu người dùng bấm [🎥 Cam])
 $('#liveBtn').onclick=async()=>{
   if(liveStream){
     const v=$('#liveVid');
-    if(v.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || !v.videoWidth || !v.videoHeight){
+    if(v.readyState<HTMLMediaElement.HAVE_CURRENT_DATA||!v.videoWidth||!v.videoHeight){
       toast('Camera chưa sẵn sàng, vui lòng đợi một chút rồi chụp lại');
       return;
     }
@@ -824,7 +1412,7 @@ $('#liveBtn').onclick=async()=>{
     const v=$('#liveVid');
     v.srcObject=liveStream;
     v.hidden=false;
-    $('#pv').hidden=true;$('#hint').hidden=true;$('#a4guide').hidden=false;
+    $('#pv').hidden=true;$('#hint').hidden=true;$('#a4guide').hidden=true;$('#zoomBtn').hidden=true;
     await Promise.race([
       new Promise((resolve,reject)=>{
         if(v.readyState>=HTMLMediaElement.HAVE_CURRENT_DATA&&v.videoWidth){resolve();return}
@@ -837,12 +1425,12 @@ $('#liveBtn').onclick=async()=>{
       new Promise((_,reject)=>setTimeout(()=>reject(new Error('Camera khởi động quá lâu')),10000))
     ]);
     await v.play();
-    $('#badge').textContent='Đặt tờ giấy vào khung rồi nhấn [🎥 CHỤP NGAY]';
+    $('#badge').textContent='Đặt tờ giấy dọc vào khung rồi nhấn [🎥 CHỤP NGAY]';
     $('#badge').hidden=false;
     $('#liveBtn').textContent='🎥 CHỤP NGAY';$('#liveBtn').className='warn';
   }catch(e){
     stopLiveCam();
-    toast('Không mở được camera. Hãy dùng nút [📷 CHỤP ẢNH] hoặc kiểm tra quyền camera.');
+    toast('Không mở được camera trực tiếp. Hãy dùng nút [📷 CHỤP ẢNH].');
   }
 };
 
@@ -851,47 +1439,49 @@ function drawQuadEditor(focusPt){
   const p=$('#pv');p.width=raw.width;p.height=raw.height;
   const ctx=p.getContext('2d');
   ctx.drawImage(raw,0,0);
-  ctx.fillStyle='rgba(0,0,0,0.45)';
+  ctx.fillStyle='rgba(0,0,0,0.48)';
   ctx.beginPath();ctx.rect(0,0,p.width,p.height);
   ctx.moveTo(curQuad[0][0],curQuad[0][1]);
   for(let i=3;i>=0;i--)ctx.lineTo(curQuad[i][0],curQuad[i][1]);
   ctx.closePath();ctx.fill();
 
-  const lw=Math.max(3,Math.round(Math.max(p.width,p.height)/240));
-  ctx.strokeStyle='#00e676';ctx.lineWidth=lw;
+  const lw=Math.max(3,Math.round(Math.max(p.width,p.height)/230));
+  ctx.strokeStyle='#10b981';ctx.lineWidth=lw;
   ctx.beginPath();
   curQuad.forEach((pt,i)=>i?ctx.lineTo(pt[0],pt[1]):ctx.moveTo(pt[0],pt[1]));
   ctx.closePath();ctx.stroke();
 
-  const rad=Math.max(16,Math.round(Math.max(p.width,p.height)/50));
+  const rad=Math.max(18,Math.round(Math.max(p.width,p.height)/46));
   curQuad.forEach(pt=>{
     ctx.beginPath();ctx.arc(pt[0],pt[1],rad,0,Math.PI*2);
-    ctx.fillStyle='rgba(0,230,118,0.28)';ctx.fill();
+    ctx.fillStyle='rgba(16,185,129,0.32)';ctx.fill();
     ctx.lineWidth=lw;ctx.strokeStyle='#fff';ctx.stroke();
-    ctx.beginPath();ctx.arc(pt[0],pt[1],Math.max(4,rad*0.25),0,Math.PI*2);
-    ctx.fillStyle='#00e676';ctx.fill();
+    ctx.beginPath();ctx.arc(pt[0],pt[1],Math.max(5,rad*0.26),0,Math.PI*2);
+    ctx.fillStyle='#10b981';ctx.fill();
   });
 
   const lp=$('#loupe');
   if(focusPt){
     lp.hidden=false;
-    const lctx=lp.getContext('2d'),zoom=2.3,sz=96,half=sz/(2*zoom);
+    const lctx=lp.getContext('2d'),zoom=2.4,sz=112,half=sz/(2*zoom);
     lctx.fillStyle='#111';lctx.fillRect(0,0,sz,sz);
     lctx.drawImage(raw,focusPt[0]-half,focusPt[1]-half,half*2,half*2,0,0,sz,sz);
-    lctx.strokeStyle='#00e676';lctx.lineWidth=2;
-    lctx.beginPath();lctx.moveTo(sz/2-14,sz/2);lctx.lineTo(sz/2+14,sz/2);
-    lctx.moveTo(sz/2,sz/2-14);lctx.lineTo(sz/2,sz/2+14);lctx.stroke();
+    lctx.strokeStyle='#10b981';lctx.lineWidth=2;
+    lctx.beginPath();lctx.moveTo(sz/2-16,sz/2);lctx.lineTo(sz/2+16,sz/2);
+    lctx.moveTo(sz/2,sz/2-16);lctx.lineTo(sz/2,sz/2+16);lctx.stroke();
   }else lp.hidden=true;
 }
 
 async function render(){
   if(!raw)return;
   $('#a4guide').hidden=true;
+  $('#zoomBtn').hidden=false;
   if(editingQuad){
     $('#box').classList.add('editing');
     $('#pv').hidden=false;$('#hint').hidden=true;
     $('#editQ').textContent='✓ Xong';$('#editQ').className='warn';
-    $('#badge').textContent='Kéo 4 chấm tròn vào 4 góc tờ giấy dọc';$('#badge').hidden=false;
+    $('#badge').textContent='Kéo 4 chấm tròn vào 4 góc (Vuốt giữa giấy để cuộn lên/xuống)';
+    $('#badge').hidden=false;
     drawQuadEditor(null);return;
   }
   $('#box').classList.remove('editing');
@@ -902,10 +1492,10 @@ async function render(){
     for(let i=0;i<rot;i++)c=rot90(c);
     enhance(c,$('#mode').value);proc=c;
     const p=$('#pv');p.width=c.width;p.height=c.height;p.getContext('2d').drawImage(c,0,0);
-    p.hidden=false;$('#hint').hidden=true;$('#a4guide').hidden=true;
+    p.hidden=false;$('#hint').hidden=true;$('#a4guide').hidden=true;$('#zoomBtn').hidden=false;
     const b=$('#badge');
     if($('#crop').checked){
-      b.textContent=curQuad?.manual?'✓ Đã cắt chuẩn A4/A3 dọc (Chỉnh tay)':(isAutoQuad?'✓ Đã tự động cắt chuẩn A4/A3 dọc (1 : √2)':'⚠ Chưa rõ mép (Bấm [📐 Góc] để chỉnh)');
+      b.textContent=curQuad?.manual?'✓ Đã cắt chuẩn A4/A3 dọc (Chỉnh tay)':(isAutoQuad?'✓ Chuẩn A4/A3 dọc (Vuốt để xem hết trang)':'⚠ Chưa rõ mép (Bấm [📐 Góc] để chỉnh)');
       b.hidden=false;
     }else b.hidden=true;
     $('#save').disabled=$('#rot').disabled=$('#editQ').disabled=false;
@@ -920,24 +1510,38 @@ function canvasCoords(e){
   const cy=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
   return[Math.max(0,Math.min(p.width,cx*p.width/r.width)),Math.max(0,Math.min(p.height,cy*p.height/r.height))];
 }
+
 const pCanvas=$('#pv');
 pCanvas.addEventListener('pointerdown',e=>{
   if(!editingQuad||!curQuad)return;
-  pCanvas.setPointerCapture(e.pointerId);
   const pt=canvasCoords(e);
   let bestI=-1,bestD=1e9;
   curQuad.forEach((q,i)=>{const d=dist(pt,q);if(d<bestD){bestD=d;bestI=i}});
-  if(bestD<Math.max(raw.width,raw.height)*0.18){dragIdx=bestI;curQuad[dragIdx]=pt;curQuad.manual=true;drawQuadEditor(pt)}
+  // Chỉ khóa ngón tay khi chạm gần 4 góc để người dùng vẫn vuốt cuộn dọc tờ giấy được
+  if(bestD<Math.max(raw.width,raw.height)*0.16){
+    e.preventDefault();
+    pCanvas.setPointerCapture(e.pointerId);
+    dragIdx=bestI;
+    curQuad[dragIdx]=pt;
+    curQuad.manual=true;
+    drawQuadEditor(pt);
+  }
 });
 pCanvas.addEventListener('pointermove',e=>{
   if(!editingQuad||dragIdx<0)return;
+  e.preventDefault();
   const pt=canvasCoords(e);
   const r=pCanvas.getBoundingClientRect(),lx=e.clientX-r.left;
-  $('#loupe').style.left=lx<r.width*0.45?'auto':'8px';
-  $('#loupe').style.right=lx<r.width*0.45?'8px':'auto';
+  $('#loupe').style.left=lx<r.width*0.45?'auto':'14px';
+  $('#loupe').style.right=lx<r.width*0.45?'14px':'auto';
   curQuad[dragIdx]=pt;curQuad.manual=true;drawQuadEditor(pt);
 });
-pCanvas.addEventListener('pointerup',()=>{if(dragIdx>=0){dragIdx=-1;curQuad=orderQuad(curQuad);curQuad.manual=true;drawQuadEditor(null)}});
+pCanvas.addEventListener('touchmove',e=>{
+  if(editingQuad&&dragIdx>=0)e.preventDefault();
+},{passive:false});
+pCanvas.addEventListener('pointerup',()=>{
+  if(dragIdx>=0){dragIdx=-1;curQuad=orderQuad(curQuad);curQuad.manual=true;drawQuadEditor(null)}
+});
 
 $('#editQ').onclick=()=>{
   if(!raw)return;
@@ -952,18 +1556,33 @@ function gallery(){
   const g=$('#gal');g.innerHTML='';
   S.pages.forEach((b,i)=>{
     const u=URL.createObjectURL(b);urls.push(u);
-    const d=document.createElement('div');d.className='card';
-    d.innerHTML=`<small>Trang ${i+1}</small><img src="${u}"><div><button type="button" data-r="${i}">📷</button><button type="button" data-d="${i}">🗑</button></div>`;
+    const d=document.createElement('div');
+    d.className='card'+(retake===i?' active-card':'');
+    d.innerHTML=`<small>Trang ${i+1}</small><img src="${u}" data-v="${i}" title="Chạm để xem tràn màn hình"><div class="card-actions"><button type="button" data-r="${i}" title="Chụp lại trang này">📷</button><button type="button" data-d="${i}" title="Xóa trang này">🗑</button></div>`;
     g.append(d);
   });
 }
-$('#gal').onclick=e=>{
-  const r=e.target.dataset.r,d=e.target.dataset.d;
-  if(r!=null){
+
+$('#gal').onclick=async e=>{
+  const v=e.target.dataset.v,r=e.target.dataset.r,d=e.target.dataset.d;
+  if(v!=null){
+    const index=Number(v);
+    if(!Number.isInteger(index)||index<0||index>=S.pages.length)return;
+    const img=await readImageElement(S.pages[index]);
+    const c=mk(img.naturalWidth||img.width,img.naturalHeight||img.height);
+    c.getContext('2d').drawImage(img,0,0);
+    stopLiveCam();
+    const p=$('#pv');p.width=c.width;p.height=c.height;p.getContext('2d').drawImage(c,0,0);
+    p.hidden=false;$('#hint').hidden=true;$('#a4guide').hidden=true;$('#zoomBtn').hidden=false;
+    $('#badge').textContent=`👁 Đang xem lại Trang ${index+1} (Cuộn dọc để xem toàn trang)`;
+    $('#badge').hidden=false;
+    $('#viewport').scrollTo({top:0,behavior:'smooth'});
+  }else if(r!=null){
     const index=Number(r);
     if(!Number.isInteger(index)||index<0||index>=S.pages.length)return;
     retake=index;
     $('#capTxt').textContent=`📷 CHỤP LẠI TRANG ${index+1}`;
+    gallery();
     toast(`Nhấn [📷 CHỤP LẠI TRANG ${index+1}] để chụp`);
   }else if(d!=null){
     const index=Number(d);
@@ -980,7 +1599,6 @@ $('#gal').onclick=e=>{
   }
 };
 
-// Đọc file an toàn trước khi reset input value để không mất dữ liệu ảnh trên iOS/Android
 for(const id of['cam','camAgain','lib']){
   $('#'+id).addEventListener('change',async e=>{
     const f=e.target.files&&e.target.files[0];
@@ -1011,12 +1629,13 @@ $('#save').onclick=async()=>{
     $('#capTxt').textContent='📷 CHỤP ẢNH';
     await save();
     raw=proc=curQuad=null;editingQuad=false;
-    setHint('Đã lưu! Nhấn <b>[📷 CHỤP ẢNH]</b> để quét trang tiếp theo.');
+    setHint('Đã lưu thành công! Nhấn <b>[📷 CHỤP ẢNH]</b> để quét trang tiếp theo.');
     $('#save').disabled=$('#rot').disabled=$('#editQ').disabled=true;
-    $('#againLbl').style.opacity='.42';$('#againLbl').style.pointerEvents='none';
+    $('#againLbl').style.opacity='.38';$('#againLbl').style.pointerEvents='none';
     $('#save').textContent='✓ LƯU TRANG';gallery();
   }catch(e){toast('Không lưu được trang: '+e.message)}
 };
+
 $('#new').onclick=async()=>{
   if(!confirm('Xóa toàn bộ ảnh hiện tại để bắt đầu hồ sơ mới?'))return;
   S.pages=[];retake=null;raw=proc=curQuad=null;editingQuad=false;
@@ -1024,11 +1643,11 @@ $('#new').onclick=async()=>{
   await save();
   setHint('Đã tạo hồ sơ mới. Nhấn <b>[📷 CHỤP ẢNH]</b> để bắt đầu.');
   $('#save').disabled=$('#rot').disabled=$('#editQ').disabled=true;
-  $('#againLbl').style.opacity='.42';$('#againLbl').style.pointerEvents='none';
+  $('#againLbl').style.opacity='.38';$('#againLbl').style.pointerEvents='none';
   gallery();
 };
 
-// ---- 6. XUẤT PDF DỌC CHUẨN KHỔ A4 (210x297mm) VÀ A3 (297x420mm)
+// ---- 7. XUẤT PDF DỌC CHUẨN KHỔ A4 (210x297mm) VÀ A3 (297x420mm)
 const clean=v=>v.trim().replace(/[<>:"/\\|?*]/g,''),fname=()=>`CHUACOGIAY_${clean($('#f_ma').value)||'[MÃ HỒ SƠ]'}_${clean($('#f_to').value)||'[SỐ TỜ]'}_${clean($('#f_thua').value)||'[SỐ THỬA]'}.pdf`;
 const upd=()=>{$('#fn').textContent=fname();$('#res').hidden=true};
 for(const id of['f_ma','f_to','f_thua','f_paper'])$('#'+id).oninput=upd;
@@ -1059,7 +1678,7 @@ $('#go').onclick=async()=>{
   if(!S.pages.length)return toast('Chưa có trang ảnh để xuất PDF!');
   if(!ma||!to||!th)return toast('Vui lòng nhập đầy đủ Mã hồ sơ, Số tờ và Số thửa!');
   S.ma=ma;S.to=to;S.thua=th;
-  $('#go').disabled=true;$('#go').textContent='Đang tạo PDF…';
+  $('#go').disabled=true;$('#go').textContent='⏳ Đang tạo PDF…';
   try{
     await save();
     const blob=await buildPdf(S.pages,$('#f_paper').value);
@@ -1074,11 +1693,13 @@ $('#go').onclick=async()=>{
     toast('Xuất PDF thất bại: '+(e&&e.message?e.message:'Lỗi không xác định'));
   }finally{
     $('#go').disabled=false;
-    $('#go').textContent='XUẤT FILE PDF';
+    $('#go').textContent='⚡ TẠO FILE PDF';
   }
 };
 
 $('#share').onclick=()=>navigator.share({files:[new File([pdf.blob],pdf.name,{type:'application/pdf'})],title:pdf.name}).catch(()=>{});
 $('#dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(pdf.blob);a.download=pdf.name;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)};
 (async()=>{try{const v=await kv('readonly',s=>s.get('s'));if(v)S=v}catch(e){}gallery()})();
-</script></body></html>
+</script>
+</body>
+</html>
