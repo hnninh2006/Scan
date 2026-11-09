@@ -16,7 +16,7 @@ jobs:
         run: pip install flet
         
       - name: Build IPA
-        run: yes | flet build ipa
+        run: echo "y" | flet build ipa
         
       - name: Upload artifact
         uses: actions/upload-artifact@v4
