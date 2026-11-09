@@ -802,28 +802,47 @@ async function loadFile(f){
 // Chế độ mở Camera trực tiếp ngay trong khung dọc A4 (nếu người dùng bấm [🎥 Cam])
 $('#liveBtn').onclick=async()=>{
   if(liveStream){
-    // Đang mở cam trực tiếp -> Bấm để chụp luôn khung hình dọc hiện tại!
     const v=$('#liveVid');
-    if(v.videoWidth>0){
-      const k=Math.min(1,MAXL/Math.max(v.videoWidth,v.videoHeight));
-      const c=mk(Math.round(v.videoWidth*k),Math.round(v.videoHeight*k));
-      c.getContext('2d').drawImage(v,0,0,c.width,c.height);
-      await processRawCanvas(c);
+    if(v.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || !v.videoWidth || !v.videoHeight){
+      toast('Camera chưa sẵn sàng, vui lòng đợi một chút rồi chụp lại');
+      return;
     }
+    const k=Math.min(1,MAXL/Math.max(v.videoWidth,v.videoHeight));
+    const c=mk(Math.max(1,Math.round(v.videoWidth*k)),Math.max(1,Math.round(v.videoHeight*k)));
+    c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+    await processRawCanvas(c);
     return;
   }
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
     return toast('Trình duyệt này chỉ hỗ trợ nút [📷 CHỤP ẢNH] mặc định');
   }
   try{
-    liveStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:2560}},audio:false});
+    liveStream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:2560}},
+      audio:false
+    });
     const v=$('#liveVid');
-    v.srcObject=liveStream;v.hidden=false;
+    v.srcObject=liveStream;
+    v.hidden=false;
     $('#pv').hidden=true;$('#hint').hidden=true;$('#a4guide').hidden=false;
-    $('#badge').textContent='Đặt tờ A4 dọc vào khung rồi nhấn [🎥 CHỤP NGAY]';$('#badge').hidden=false;
+    await Promise.race([
+      new Promise((resolve,reject)=>{
+        if(v.readyState>=HTMLMediaElement.HAVE_CURRENT_DATA&&v.videoWidth){resolve();return}
+        const done=()=>{cleanup();resolve()};
+        const fail=()=>{cleanup();reject(new Error('Không thể khởi động camera'))};
+        const cleanup=()=>{v.removeEventListener('loadeddata',done);v.removeEventListener('error',fail)};
+        v.addEventListener('loadeddata',done,{once:true});
+        v.addEventListener('error',fail,{once:true});
+      }),
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error('Camera khởi động quá lâu')),10000))
+    ]);
+    await v.play();
+    $('#badge').textContent='Đặt tờ giấy vào khung rồi nhấn [🎥 CHỤP NGAY]';
+    $('#badge').hidden=false;
     $('#liveBtn').textContent='🎥 CHỤP NGAY';$('#liveBtn').className='warn';
   }catch(e){
-    toast('Hãy nhấn nút [📷 CHỤP ẢNH] màu xanh để mở máy ảnh');
+    stopLiveCam();
+    toast('Không mở được camera. Hãy dùng nút [📷 CHỤP ẢNH] hoặc kiểm tra quyền camera.');
   }
 };
 
@@ -941,13 +960,23 @@ function gallery(){
 $('#gal').onclick=e=>{
   const r=e.target.dataset.r,d=e.target.dataset.d;
   if(r!=null){
-    retake=+r;
-    $('#capTxt').textContent=`📷 CHỤP LẠI TRANG ${+r+1}`;
-    toast(`Nhấn [📷 CHỤP LẠI TRANG ${+r+1}] để chụp`);
+    const index=Number(r);
+    if(!Number.isInteger(index)||index<0||index>=S.pages.length)return;
+    retake=index;
+    $('#capTxt').textContent=`📷 CHỤP LẠI TRANG ${index+1}`;
+    toast(`Nhấn [📷 CHỤP LẠI TRANG ${index+1}] để chụp`);
   }else if(d!=null){
-    S.pages.splice(+d,1);
-    if(retake===+d){retake=null;$('#capTxt').textContent='📷 CHỤP ẢNH'}
-    save();gallery();toast(`Đã xóa Trang ${+d+1}`);
+    const index=Number(d);
+    if(!Number.isInteger(index)||index<0||index>=S.pages.length)return;
+    S.pages.splice(index,1);
+    if(retake===index){
+      retake=null;
+      $('#capTxt').textContent='📷 CHỤP ẢNH';
+    }else if(retake!=null&&retake>index){
+      retake--;
+      $('#capTxt').textContent=`📷 CHỤP LẠI TRANG ${retake+1}`;
+    }
+    save();gallery();toast(`Đã xóa Trang ${index+1}`);
   }
 };
 
@@ -965,15 +994,28 @@ $('#rot').onclick=()=>{editingQuad=false;rot=(rot+1)%4;render()};
 $('#save').onclick=async()=>{
   if(editingQuad){editingQuad=false;await render()}
   if(!proc)return;
-  const b=await new Promise(r=>proc.toBlob(r,'image/jpeg',.92));
-  if(retake!=null){S.pages[retake]=b;toast(`Đã cập nhật Trang ${retake+1}`);retake=null}
-  else{S.pages.push(b);toast(`Đã lưu Trang ${S.pages.length}`)}
-  $('#capTxt').textContent='📷 CHỤP ẢNH';
-  await save();raw=proc=curQuad=null;editingQuad=false;
-  setHint('Đã lưu! Nhấn <b>[📷 CHỤP ẢNH]</b> để quét trang tiếp theo.');
-  $('#save').disabled=$('#rot').disabled=$('#editQ').disabled=true;
-  $('#againLbl').style.opacity='.42';$('#againLbl').style.pointerEvents='none';
-  $('#save').textContent='✓ LƯU TRANG';gallery();
+  try{
+    const b=await new Promise((resolve,reject)=>{
+      proc.toBlob(blob=>blob?resolve(blob):reject(new Error('Không tạo được ảnh JPEG')), 'image/jpeg', .92);
+    });
+    if(!b.size)throw new Error('Ảnh sau xử lý bị rỗng');
+    if(retake!=null&&(!Number.isInteger(retake)||retake<0||retake>=S.pages.length))retake=null;
+    if(retake!=null){
+      S.pages[retake]=b;
+      toast(`Đã cập nhật Trang ${retake+1}`);
+      retake=null;
+    }else{
+      S.pages.push(b);
+      toast(`Đã lưu Trang ${S.pages.length}`);
+    }
+    $('#capTxt').textContent='📷 CHỤP ẢNH';
+    await save();
+    raw=proc=curQuad=null;editingQuad=false;
+    setHint('Đã lưu! Nhấn <b>[📷 CHỤP ẢNH]</b> để quét trang tiếp theo.');
+    $('#save').disabled=$('#rot').disabled=$('#editQ').disabled=true;
+    $('#againLbl').style.opacity='.42';$('#againLbl').style.pointerEvents='none';
+    $('#save').textContent='✓ LƯU TRANG';gallery();
+  }catch(e){toast('Không lưu được trang: '+e.message)}
 };
 $('#new').onclick=async()=>{
   if(!confirm('Xóa toàn bộ ảnh hiện tại để bắt đầu hồ sơ mới?'))return;
@@ -1014,15 +1056,28 @@ async function buildPdf(blobs,paperType){
 
 $('#go').onclick=async()=>{
   const ma=clean($('#f_ma').value),to=clean($('#f_to').value),th=clean($('#f_thua').value);
+  if(!S.pages.length)return toast('Chưa có trang ảnh để xuất PDF!');
   if(!ma||!to||!th)return toast('Vui lòng nhập đầy đủ Mã hồ sơ, Số tờ và Số thửa!');
-  S.ma=ma;S.to=to;S.thua=th;save();$('#go').disabled=true;$('#go').textContent='Đang tạo PDF…';
+  S.ma=ma;S.to=to;S.thua=th;
+  $('#go').disabled=true;$('#go').textContent='Đang tạo PDF…';
   try{
-    pdf={blob:await buildPdf(S.pages,$('#f_paper').value),name:fname()};$('#res').hidden=false;
-    $('#share').hidden=!(navigator.canShare&&navigator.canShare({files:[new File([pdf.blob],pdf.name,{type:'application/pdf'})]}));
+    await save();
+    const blob=await buildPdf(S.pages,$('#f_paper').value);
+    if(!blob||!blob.size)throw new Error('File PDF được tạo bị rỗng');
+    pdf={blob,name:fname()};
+    $('#res').hidden=false;
+    const shareFile=new File([pdf.blob],pdf.name,{type:'application/pdf'});
+    $('#share').hidden=!(navigator.canShare&&navigator.canShare({files:[shareFile]}));
     toast('Xuất PDF thành công!');
-  }catch(e){toast('Xuất PDF thất bại: '+e.message)}
-  $('#go').disabled=false;$('#go').textContent='XUẤT FILE PDF';
+  }catch(e){
+    $('#res').hidden=true;
+    toast('Xuất PDF thất bại: '+(e&&e.message?e.message:'Lỗi không xác định'));
+  }finally{
+    $('#go').disabled=false;
+    $('#go').textContent='XUẤT FILE PDF';
+  }
 };
+
 $('#share').onclick=()=>navigator.share({files:[new File([pdf.blob],pdf.name,{type:'application/pdf'})],title:pdf.name}).catch(()=>{});
 $('#dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(pdf.blob);a.download=pdf.name;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)};
 (async()=>{try{const v=await kv('readonly',s=>s.get('s'));if(v)S=v}catch(e){}gallery()})();
