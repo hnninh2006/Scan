@@ -9,7 +9,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          run: pip install flet --upgrade
       - name: Install Flet
         run: pip install flet==0.27.6
       - name: Build IPA
