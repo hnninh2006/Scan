@@ -9,7 +9,7 @@ on:
 env:
   PYTHON_VERSION: "3.12"
   # PHẢI khớp với flet==... trong pyproject.toml
-  FLET_VERSION: "0.27.6"
+  FLET_VERSION: "0.28.3"
   # Tắt spinner/màu của rich để log không bị rác
   TERM: dumb
   NO_COLOR: "1"
