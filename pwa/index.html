@@ -5,25 +5,35 @@
 <meta name="apple-mobile-web-app-title" content="Scan Hồ Sơ"><meta name="theme-color" content="#1565c0">
 <title>Scan Hồ Sơ Đất Đai</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font:15px system-ui,sans-serif;padding:max(12px,env(safe-area-inset-top)) 12px max(16px,env(safe-area-inset-bottom));max-width:520px;margin:auto;color:#222}
+*{box-sizing:border-box}body{margin:0;font:15px system-ui,sans-serif;padding:max(12px,env(safe-area-inset-top)) 12px max(16px,env(safe-area-inset-bottom));max-width:520px;margin:auto;color:#222;user-select:none;-webkit-user-select:none}
 header{display:flex;justify-content:space-between;align-items:center;background:#e3f2fd;border-radius:8px;padding:10px;gap:8px}
-#box{height:290px;margin:10px 0;background:#eee;border:1px solid #bbb;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:6px;text-align:center;color:#666}
-#pv{max-width:100%;max-height:100%}
+#box{position:relative;height:310px;margin:10px 0;background:#1e1e1e;border:1px solid #bbb;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:6px;text-align:center;color:#ccc;overflow:hidden;touch-action:none}
+#pv{max-width:100%;max-height:100%;border-radius:4px}
+#loupe{position:absolute;top:8px;left:8px;width:96px;height:96px;border:2.5px solid #00e676;border-radius:50%;box-shadow:0 4px 12px #0009;pointer-events:none;background:#000}
 .row{display:flex;gap:8px;margin:8px 0;align-items:center;flex-wrap:wrap}.row>button{flex:1}
-button,select{font:inherit;padding:12px;border-radius:8px;border:1px solid #1565c0;background:#fff;color:#1565c0}
-button:disabled{opacity:.45}.pri{background:#1976d2;color:#fff}.ok{background:#2e7d32;color:#fff;border-color:#2e7d32}.pdf{background:#c62828;color:#fff;border-color:#c62828;width:100%;padding:15px;font-weight:700}
+button,select{font:inherit;padding:11px 10px;border-radius:8px;border:1px solid #1565c0;background:#fff;color:#1565c0;cursor:pointer}
+button:disabled{opacity:.45;cursor:default}.pri{background:#1976d2;color:#fff}.ok{background:#2e7d32;color:#fff;border-color:#2e7d32}.warn{background:#ef6c00;color:#fff;border-color:#ef6c00}.pdf{background:#c62828;color:#fff;border-color:#c62828;width:100%;padding:15px;font-weight:700}
 #gal{display:flex;gap:8px;overflow-x:auto;background:#f5f5f5;padding:6px;border-radius:8px;min-height:60px}
-.card{flex:none;background:#fff;border:1px solid #ddd;border-radius:6px;padding:4px;text-align:center}.card img{width:75px;height:75px;object-fit:cover;display:block}.card button{padding:4px 8px}
-#modal{position:fixed;inset:0;background:#0007;display:flex;align-items:flex-end;justify-content:center;z-index:5}#modal[hidden],#toast[hidden],#res[hidden]{display:none}
+.card{flex:none;background:#fff;border:1px solid #ddd;border-radius:6px;padding:4px;text-align:center}.card img{width:75px;height:75px;object-fit:cover;display:block;margin:2px 0}.card button{padding:4px 8px}
+#modal{position:fixed;inset:0;background:#0007;display:flex;align-items:flex-end;justify-content:center;z-index:5}#modal[hidden],#toast[hidden],#res[hidden],#loupe[hidden],#pv[hidden],#hint[hidden]{display:none}
 .sheet{background:#fff;width:100%;max-width:520px;border-radius:14px 14px 0 0;padding:16px 16px max(16px,env(safe-area-inset-bottom))}
 .sheet label{display:block;margin:8px 0;font-size:13px}.sheet input{width:100%;font:inherit;padding:10px;margin-top:3px;border:1px solid #999;border-radius:6px}
-#toast{position:fixed;left:12px;right:12px;bottom:max(16px,env(safe-area-inset-bottom));background:#2e7d32;color:#fff;padding:12px;border-radius:8px;z-index:9}
+#toast{position:fixed;left:12px;right:12px;bottom:max(16px,env(safe-area-inset-bottom));background:#2e7d32;color:#fff;padding:12px;border-radius:8px;z-index:9;text-align:center;box-shadow:0 4px 12px #0004}
+.badge{position:absolute;bottom:8px;right:8px;background:#000a;color:#00e676;font-size:12px;padding:4px 8px;border-radius:6px;pointer-events:none}
 </style></head><body>
 <header><b>📄 SCAN HỒ SƠ ĐẤT ĐAI</b><b id="cnt"></b></header>
-<div id="box"><canvas id="pv" hidden></canvas><span id="hint">Nhấn [CHỤP ẢNH] để quét trang hồ sơ</span></div>
-<div class="row"><label><input type="checkbox" id="crop" checked> Tự cắt mép</label>
-<select id="mode"><option value="color">Màu (Rõ dấu)</option><option value="bw">Đen trắng</option></select>
-<button id="rot" disabled>⟳ Xoay 90°</button></div>
+<div id="box">
+  <canvas id="pv" hidden></canvas>
+  <canvas id="loupe" width="96" height="96" hidden></canvas>
+  <span id="badge" class="badge" hidden></span>
+  <span id="hint">Nhấn [CHỤP ẢNH] để quét trang hồ sơ</span>
+</div>
+<div class="row">
+  <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="crop" checked> Tự cắt mép</label>
+  <button id="editQ" disabled style="flex:0;padding:11px 10px" title="Chỉnh tay 4 góc giấy">📐 Góc</button>
+  <select id="mode" style="flex:1"><option value="color">Màu (Rõ dấu)</option><option value="bw">Đen trắng</option></select>
+  <button id="rot" disabled style="flex:0">⟳ 90°</button>
+</div>
 <div class="row"><button class="pri" id="cap">📷 CHỤP ẢNH</button><button id="pick" style="flex:0">🖼</button></div>
 <div class="row"><button class="ok" id="save" disabled>LƯU ẢNH</button><button id="again" disabled>CHỤP LẠI</button></div>
 <b>Danh sách trang đã scan (đúng thứ tự PDF):</b><div id="gal"></div>
@@ -41,96 +51,716 @@ button:disabled{opacity:.45}.pri{background:#1976d2;color:#fff}.ok{background:#2
 <div id="toast" hidden></div>
 <script>
 const $=s=>document.querySelector(s),mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
-const MAXL=2000,toast=m=>{const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2500)};
+const MAXL=2200,toast=m=>{const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2600)};
 let S={ma:'26784',to:'',thua:'',pages:[]},raw=null,proc=null,rot=0,retake=null,urls=[],pdf=null;
-// ---- lưu trữ bền vững (IndexedDB): tắt trình duyệt mở lại vẫn còn
+let curQuad=null,isAutoQuad=false,editingQuad=false,dragIdx=-1;
+
+// ---- 1. LƯU TRỮ BỀN VỮNG (IndexedDB)
 const db=new Promise((ok,no)=>{const r=indexedDB.open('landscan',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
 const kv=async(mode,fn)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction('kv',mode),q=fn(t.objectStore('kv'));t.oncomplete=()=>ok(q&&q.result);t.onerror=()=>no(t.error)})};
 const save=()=>kv('readwrite',s=>s.put(S,'s')).catch(()=>toast('Không lưu được dữ liệu cục bộ'));
-// ---- xử lý ảnh (thuần JS, không cần OpenCV)
+
+// ---- 2. CÁC HÀM TOÁN HỌC & XỬ LÝ ẢNH CƠ SỞ
 const copy=c=>{const o=mk(c.width,c.height);o.getContext('2d').drawImage(c,0,0);return o};
 const rot90=c=>{const o=mk(c.height,c.width),x=o.getContext('2d');x.translate(o.width,0);x.rotate(Math.PI/2);x.drawImage(c,0,0);return o};
-function blur(a,w,h,r){const t=new Float32Array(a.length),o=new Float32Array(a.length);
- for(let y=0;y<h;y++){let s=0,n=0;const b=y*w;for(let x=0;x<=r&&x<w;x++){s+=a[b+x];n++}
-  for(let x=0;x<w;x++){t[b+x]=s/n;const ad=x+r+1,rm=x-r;if(ad<w){s+=a[b+ad];n++}if(rm>=0){s-=a[b+rm];n--}}}
- for(let x=0;x<w;x++){let s=0,n=0;for(let y=0;y<=r&&y<h;y++){s+=t[y*w+x];n++}
-  for(let y=0;y<h;y++){o[y*w+x]=s/n;const ad=y+r+1,rm=y-r;if(ad<h){s+=t[ad*w+x];n++}if(rm>=0){s-=t[rm*w+x];n--}}}
- return o}
-function otsu(g){const h=new Array(256).fill(0);for(const v of g)h[v]++;const T=g.length;let sa=0;for(let i=0;i<256;i++)sa+=i*h[i];
- let wb=0,sb=0,best=-1,t=127;for(let i=0;i<256;i++){wb+=h[i];if(!wb)continue;const wf=T-wb;if(!wf)break;sb+=i*h[i];const d=sb/wb-(sa-sb)/wf,v=wb*wf*d*d;if(v>best){best=v;t=i}}return t}
-function warp(c,Q){const d=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
- const W=Math.max(1,Math.round(Math.max(d(Q[0],Q[1]),d(Q[3],Q[2])))),H=Math.max(1,Math.round(Math.max(d(Q[0],Q[3]),d(Q[1],Q[2]))));
- const D=[[0,0],[W-1,0],[W-1,H-1],[0,H-1]],A=[];
- for(let i=0;i<4;i++){const[x,y]=D[i],[X,Y]=Q[i];A.push([x,y,1,0,0,0,-x*X,-y*X,X]);A.push([0,0,0,x,y,1,-x*Y,-y*Y,Y])}
- for(let i=0;i<8;i++){let p=i;for(let r=i+1;r<8;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;[A[i],A[p]]=[A[p],A[i]];
-  for(let r=0;r<8;r++)if(r!==i){const f=A[r][i]/A[i][i];for(let k=i;k<9;k++)A[r][k]-=f*A[i][k]}}
- const k=A.map((r,i)=>r[8]/r[i]),sw=c.width,sh=c.height,sd=c.getContext('2d').getImageData(0,0,sw,sh).data;
- const o=mk(W,H),oc=o.getContext('2d'),od=oc.createImageData(W,H),dd=od.data;
- for(let y=0;y<H;y++)for(let x=0;x<W;x++){const w=k[6]*x+k[7]*y+1,X=(k[0]*x+k[1]*y+k[2])/w,Y=(k[3]*x+k[4]*y+k[5])/w,x0=Math.floor(X),y0=Math.floor(Y),i=(y*W+x)*4;
-  dd[i+3]=255;if(x0<0||y0<0||x0>=sw-1||y0>=sh-1){dd[i]=dd[i+1]=dd[i+2]=255;continue}
-  const fx=X-x0,fy=Y-y0,p=(y0*sw+x0)*4,q=p+sw*4;
-  for(let ch=0;ch<3;ch++)dd[i+ch]=sd[p+ch]*(1-fx)*(1-fy)+sd[p+4+ch]*fx*(1-fy)+sd[q+ch]*(1-fx)*fy+sd[q+4+ch]*fx*fy}
- oc.putImageData(od,0,0);return o}
-function autoCrop(c){const sh=400,sc=sh/c.height,sw=Math.max(1,Math.round(c.width*sc)),s=mk(sw,sh),sx=s.getContext('2d');sx.drawImage(c,0,0,sw,sh);
- const px=sx.getImageData(0,0,sw,sh).data,g=new Float32Array(sw*sh);for(let i=0;i<g.length;i++)g[i]=(px[i*4]*77+px[i*4+1]*150+px[i*4+2]*29)/256;
- const gb=blur(g,sw,sh,3),gu=Uint8Array.from(gb,v=>v),t=otsu(gu),m0=new Float32Array(sw*sh);for(let i=0;i<m0.length;i++)m0[i]=gu[i]>t?1:0;
- const m=blur(m0,sw,sh,4);let n=0,mn=1e9,mx=-1e9,dn=1e9,dx=-1e9,tl,br,tr,bl;
- for(let y=0;y<sh;y++)for(let x=0;x<sw;x++)if(m[y*sw+x]>.5){n++;const p=x+y,q=x-y;if(p<mn){mn=p;tl=[x,y]}if(p>mx){mx=p;br=[x,y]}if(q>dx){dx=q;tr=[x,y]}if(q<dn){dn=q;bl=[x,y]}}
- const tot=sw*sh,fr=n/tot;if(fr<.25||fr>.97)return c;
- const Q=[tl,tr,br,bl];let ar=0;for(let i=0;i<4;i++){const a=Q[i],b=Q[(i+1)%4];ar+=a[0]*b[1]-b[0]*a[1]}ar=Math.abs(ar)/2;
- if(ar<tot*.25||n/ar<.6||n/ar>1.15)return c;
- return warp(c,Q.map(p=>[p[0]/sc,p[1]/sc]))}
-function enhance(c,mode){const w=c.width,h=c.height,ctx=c.getContext('2d'),im=ctx.getImageData(0,0,w,h),d=im.data,f=8,sw=Math.ceil(w/f),sh=Math.ceil(h/f),sm=new Float32Array(sw*sh),cn=new Float32Array(sw*sh);
- for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=(y*w+x)*4,j=(y/f|0)*sw+(x/f|0);sm[j]+=(d[i]*77+d[i+1]*150+d[i+2]*29)/256;cn[j]++}
- for(let j=0;j<sm.length;j++)sm[j]/=cn[j]||1;const s=Math.min(w,h),bg=blur(sm,sw,sh,mode==='bw'?Math.max(2,Math.round(s/80*2/f)):Math.max(3,Math.round(s/10/f)));
- for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=(y*w+x)*4,b=bg[(y/f|0)*sw+(x/f|0)];
-  if(mode==='bw'){const l=(d[i]*77+d[i+1]*150+d[i+2]*29)/256,v=l>b-10?255:0;d[i]=d[i+1]=d[i+2]=v}
-  else{const g=255/Math.max(b,40);for(let ch=0;ch<3;ch++)d[i+ch]=(d[i+ch]*g-128)*1.25+133}}
- ctx.putImageData(im,0,0)}
-// ---- giao diện
-const setHint=t=>{$('#hint').textContent=t;$('#hint').hidden=false;$('#pv').hidden=true};
-async function loadFile(f){try{const img=new Image();img.src=URL.createObjectURL(f);await img.decode();const k=Math.min(1,MAXL/Math.max(img.naturalWidth,img.naturalHeight));
- raw=mk(Math.round(img.naturalWidth*k),Math.round(img.naturalHeight*k));raw.getContext('2d').drawImage(img,0,0,raw.width,raw.height);URL.revokeObjectURL(img.src);rot=0;render()}catch(e){toast('Không đọc được ảnh')}}
-async function render(){if(!raw)return;setHint('Đang xử lý ảnh…');await new Promise(r=>setTimeout(r,30));
- try{let c=$('#crop').checked?autoCrop(raw):raw;if(c===raw)c=copy(raw);for(let i=0;i<rot;i++)c=rot90(c);enhance(c,$('#mode').value);proc=c;
-  const p=$('#pv');p.width=c.width;p.height=c.height;p.getContext('2d').drawImage(c,0,0);p.hidden=false;$('#hint').hidden=true;
-  $('#save').disabled=$('#again').disabled=$('#rot').disabled=false;$('#save').textContent=retake!=null?`CẬP NHẬT TRANG ${retake+1}`:'LƯU ẢNH'}catch(e){toast('Lỗi xử lý ảnh: '+e.message)}}
-function gallery(){urls.forEach(u=>URL.revokeObjectURL(u));urls=[];$('#cnt').textContent=`Đã lưu: ${S.pages.length} trang`;const g=$('#gal');g.innerHTML='';
- S.pages.forEach((b,i)=>{const u=URL.createObjectURL(b);urls.push(u);const d=document.createElement('div');d.className='card';
-  d.innerHTML=`<small>Trang ${i+1}</small><img src="${u}"><div><button data-r="${i}">📷</button><button data-d="${i}">🗑</button></div>`;g.append(d)})}
-$('#gal').onclick=e=>{const r=e.target.dataset.r,d=e.target.dataset.d;
- if(r!=null){retake=+r;setHint(`Đang CHỤP LẠI Trang ${+r+1}…`);$('#cam').click()}
- else if(d!=null){S.pages.splice(+d,1);if(retake===+d)retake=null;save();gallery();toast(`Đã xóa Trang ${+d+1}`)}};
-$('#cap').onclick=$('#again').onclick=()=>$('#cam').click();$('#pick').onclick=()=>$('#lib').click();
+const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+
+function blur(a,w,h,r){
+  if(r<1)return new Float32Array(a);
+  const t=new Float32Array(a.length),o=new Float32Array(a.length);
+  for(let y=0;y<h;y++){let s=0,n=0;const b=y*w;for(let x=0;x<=r&&x<w;x++){s+=a[b+x];n++}
+    for(let x=0;x<w;x++){t[b+x]=s/n;const ad=x+r+1,rm=x-r;if(ad<w){s+=a[b+ad];n++}if(rm>=0){s-=a[b+rm];n--}}}
+  for(let x=0;x<w;x++){let s=0,n=0;for(let y=0;y<=r&&y<h;y++){s+=t[y*w+x];n++}
+    for(let y=0;y<h;y++){o[y*w+x]=s/n;const ad=y+r+1,rm=y-r;if(ad<h){s+=t[ad*w+x];n++}if(rm>=0){s-=t[rm*w+x];n--}}}
+  return o;
+}
+
+// Đóng hình thái học (Morphological Closing = Dilate -> Erode): Xóa chữ đen & đường kẻ bên trong mặt giấy nhưng giữ nguyên mép giấy
+function morphClose(a,w,h,r){
+  const dil= MorphOp(a,w,h,r,true);
+  return MorphOp(dil,w,h,r,false);
+}
+function MorphOp(a,w,h,r,isMax){
+  const t=new Float32Array(w*h),o=new Float32Array(w*h);
+  for(let y=0;y<h;y++){const b=y*w;for(let x=0;x<w;x++){
+    let v=isMax?-1e9:1e9;const x0=Math.max(0,x-r),x1=Math.min(w-1,x+r);
+    for(let k=x0;k<=x1;k++){const u=a[b+k];if(isMax?u>v:u<v)v=u}t[b+x]=v;
+  }}
+  for(let x=0;x<w;x++){for(let y=0;y<h;y++){
+    let v=isMax?-1e9:1e9;const y0=Math.max(0,y-r),y1=Math.min(h-1,y+r);
+    for(let k=y0;k<=y1;k++){const u=t[k*w+x];if(isMax?u>v:u<v)v=u}o[y*w+x]=v;
+  }}
+  return o;
+}
+
+function otsu(g){
+  const h=new Int32Array(256);let T=g.length,sa=0;
+  for(let i=0;i<T;i++){const v=Math.max(0,Math.min(255,g[i]|0));h[v]++;}
+  for(let i=0;i<256;i++)sa+=i*h[i];
+  let wb=0,sb=0,best=-1,t=127;
+  for(let i=0;i<256;i++){wb+=h[i];if(!wb)continue;const wf=T-wb;if(!wf)break;sb+=i*h[i];const d=sb/wb-(sa-sb)/wf,v=wb*wf*d*d;if(v>best){best=v;t=i}}
+  return t;
+}
+
+// ---- 3. THUẬT TOÁN PHÁT HIỆN 4 GÓC GIẤY 6 TẦNG (MULTI-CUE + CONVEX HULL + RANSAC LINE INTERSECTION)
+
+// Giữ lại vùng liên thông lớn nhất ưu tiên vùng trung tâm & lấp toàn bộ lỗ thủng bên trong (chữ, con dấu, bảng biểu)
+function cleanMask(mask,w,h){
+  const vis=new Int32Array(w*h),q=new Int32Array(w*h);
+  let bestId=0,bestScore=-1,id=0;
+  const cx=w*0.5,cy=h*0.5,maxD=Math.hypot(cx,cy);
+  for(let i=0;i<w*h;i++){
+    if(!mask[i]||vis[i])continue;
+    id++;let head=0,tail=0,sx=0,sy=0;
+    q[tail++]=i;vis[i]=id;
+    while(head<tail){
+      const cur=q[head++],x=cur%w,y=(cur/w)|0;
+      sx+=x;sy+=y;
+      if(x>0&&mask[cur-1]&&!vis[cur-1]){vis[cur-1]=id;q[tail++]=cur-1}
+      if(x<w-1&&mask[cur+1]&&!vis[cur+1]){vis[cur+1]=id;q[tail++]=cur+1}
+      if(y>0&&mask[cur-w]&&!vis[cur-w]){vis[cur-w]=id;q[tail++]=cur-w}
+      if(y<h-1&&mask[cur+w]&&!vis[cur+w]){vis[cur+w]=id;q[tail++]=cur+w}
+    }
+    const area=tail;if(area<w*h*0.08)continue;
+    const mx=sx/area,my=sy/area,centWeight=1-0.45*(Math.hypot(mx-cx,my-cy)/maxD);
+    const sc=area*centWeight;
+    if(sc>bestScore){bestScore=sc;bestId=id;}
+  }
+  const out=new Uint8Array(w*h);
+  if(!bestId)return{mask:out,area:0};
+  for(let i=0;i<w*h;i++)if(vis[i]===bestId)out[i]=1;
+
+  // Lấp mọi lỗ thủng bên trong tờ giấy bằng cách loang (Flood-Fill) nền 0 từ 4 mép khung hình
+  const bg=new Uint8Array(w*h);let head=0,tail=0;
+  const pushBg=idx=>{if(!out[idx]&&!bg[idx]){bg[idx]=1;q[tail++]=idx}};
+  for(let x=0;x<w;x++){pushBg(x);pushBg((h-1)*w+x)}
+  for(let y=0;y<h;y++){pushBg(y*w);pushBg(y*w+w-1)}
+  while(head<tail){
+    const cur=q[head++],x=cur%w,y=(cur/w)|0;
+    if(x>0)pushBg(cur-1);if(x<w-1)pushBg(cur+1);
+    if(y>0)pushBg(cur-w);if(y<h-1)pushBg(cur+w);
+  }
+  let area=0;
+  for(let i=0;i<w*h;i++){if(!bg[i]){out[i]=1;area++}}
+  return{mask:out,area};
+}
+
+// Bao lồi Monotone Chain O(N)
+function convexHull(pts){
+  if(pts.length<=3)return pts.slice();
+  const P=pts.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+  const cross=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);
+  const lo=[],up=[];
+  for(const p of P){while(lo.length>=2&&cross(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p)}
+  for(let i=P.length-1;i>=0;i--){const p=P[i];while(up.length>=2&&cross(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p)}
+  lo.pop();up.pop();return lo.concat(up);
+}
+
+// Sắp xếp 4 đỉnh theo đúng chiều kim đồng hồ [TL, TR, BR, BL] bất biến góc xoay
+function orderQuad(Q){
+  let cx=0,cy=0;for(const p of Q){cx+=p[0];cy+=p[1]}cx/=4;cy/=4;
+  const C=Q.slice().sort((a,b)=>Math.atan2(a[1]-cy,a[0]-cx)-Math.atan2(b[1]-cy,b[0]-cx));
+  // Chọn đỉnh Top-Left dựa trên tổng x+y nhỏ nhất trong 2 đỉnh cao nhất
+  let tl=0,best=1e9;
+  for(let i=0;i<4;i++){const s=C[i][0]*0.85+C[i][1]*1.15;if(s<best){best=s;tl=i}}
+  return[C[tl],C[(tl+1)%4],C[(tl+2)%4],C[(tl+3)%4]];
+}
+
+// Tìm tứ giác nội tiếp có diện tích lớn nhất trên bao lồi (Bất biến với mọi góc nghiêng của giấy)
+function hullToMaxQuad(H){
+  const n=H.length;if(n<4)return null;
+  if(n===4)return orderQuad(H);
+  const triArea=(a,b,c)=>Math.abs((b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]));
+  let cx=0,cy=0;for(const p of H){cx+=p[0];cy+=p[1]}cx/=n;cy/=n;
+  let i0=0,d0=-1;for(let i=0;i<n;i++){const d=Math.hypot(H[i][0]-cx,H[i][1]-cy);if(d>d0){d0=d;i0=i}}
+  let i2=0,d2=-1;for(let i=0;i<n;i++){const d=dist(H[i0],H[i]);if(d>d2){d2=d;i2=i}}
+  const side=(a,b,p)=>(b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0]);
+  let i1=-1,i3=-1,b1=-1,b3=-1;
+  for(let i=0;i<n;i++){
+    const s=side(H[i0],H[i2],H[i]),ar=Math.abs(s);
+    if(s>0&&ar>b1){b1=ar;i1=i}else if(s<0&&ar>b3){b3=ar;i3=i}
+  }
+  if(i1<0||i3<0)return null;
+  let idx=[i0,i1,i2,i3];
+  // Tinh chỉnh lặp 3 vòng để đạt cực đại toàn cục diện tích tứ giác
+  for(let it=0;it<3;it++){
+    for(let k=0;k<4;k++){
+      const prev=H[idx[(k+3)%4]],next=H[idx[(k+1)%4]],opp=H[idx[(k+2)%4]];
+      const refSide=Math.sign(side(prev,next,opp))||1;
+      let bestI=idx[k],bestA=-1;
+      for(let i=0;i<n;i++){
+        const sv=side(prev,next,H[i]);
+        if(sv*refSide<=0){const a=Math.abs(sv);if(a>bestA){bestA=a;bestI=i}}
+      }
+      idx[k]=bestI;
+    }
+  }
+  return orderQuad(idx.map(i=>[H[i][0],H[i][1]]));
+}
+
+// Khớp đường thẳng bằng IRLS (Huber/Tukey) chống nhiễu khi góc giấy bị quăn mép hoặc ngón tay che
+function fitRobustLine(pts){
+  if(pts.length<4)return null;
+  const n=pts.length,w=new Float32Array(n).fill(1);
+  let vx=1,vy=0,mx=0,my=0;
+  for(let it=0;it<4;it++){
+    let sw=0,sx=0,sy=0;
+    for(let i=0;i<n;i++){const wi=w[i];sw+=wi;sx+=wi*pts[i][0];sy+=wi*pts[i][1]}
+    if(sw<1e-5)return null;
+    mx=sx/sw;my=sy/sw;
+    let sxx=0,syy=0,sxy=0;
+    for(let i=0;i<n;i++){const wi=w[i],dx=pts[i][0]-mx,dy=pts[i][1]-my;sxx+=wi*dx*dx;syy+=wi*dy*dy;sxy+=wi*dx*dy}
+    const tr=sxx+syy,det=sxx*syy-sxy*sxy,lam=0.5*(tr+Math.sqrt(Math.max(0,tr*tr-4*det)));
+    vx=sxy;vy=lam-sxx;
+    if(Math.hypot(vx,vy)<1e-6){vx=1;vy=0}else{const l=Math.hypot(vx,vy);vx/=l;vy/=l}
+    const nx=-vy,ny=vx;
+    for(let i=0;i<n;i++){const r=Math.abs((pts[i][0]-mx)*nx+(pts[i][1]-my)*ny);w[i]=r<2.2?1:r<5?2.2/r:0.05}
+  }
+  const a=-vy,b=vx,c=-(a*mx+b*my);
+  return[a,b,c];
+}
+
+function intersectLines(L1,L2,fallback){
+  if(!L1||!L2)return fallback;
+  const det=L1[0]*L2[1]-L2[0]*L1[1];
+  if(Math.abs(det)<1e-5)return fallback;
+  const x=(L1[1]*L2[2]-L2[1]*L1[2])/det,y=(L2[0]*L1[2]-L1[0]*L2[2])/det;
+  return dist([x,y],fallback)<60?[x,y]:fallback;
+}
+
+// Tinh chỉnh 4 cạnh: lấy mẫu phần giữa mỗi cạnh (15%..85% để bỏ qua góc quăn/ngón tay), hút vào biên Gradient Sobel và giao 4 đường thẳng
+function refineQuadByEdges(Q,mask,mag,gx,gy,w,h){
+  const lines=[];
+  for(let k=0;k<4;k++){
+    const A=Q[k],B=Q[(k+1)%4],len=dist(A,B);
+    if(len<16){lines.push(null);continue}
+    const tx=(B[0]-A[0])/len,ty=(B[1]-A[1])/len;
+    // Pháp tuyến hướng từ trong giấy ra ngoài
+    const nx=ty,ny=-tx;
+    const pts=[];
+    const steps=Math.min(60,Math.max(18,len|0));
+    for(let s=0;s<=steps;s++){
+      const t=0.14+0.72*(s/steps); // Bỏ 14% ở 2 đầu mút góc giấy (chống góc quăn / ngón tay đè góc)
+      const bx=A[0]+(B[0]-A[0])*t,by=A[1]+(B[1]-A[1])*t;
+      let bestR=0,bestScore=-1;
+      for(let r=-7;r<=7;r+=0.5){
+        const px=Math.round(bx+nx*r),py=Math.round(by+ny*r);
+        if(px<1||py<1||px>=w-1||py>=h-1)continue;
+        const idx=py*w+px,m=mag[idx];
+        // Hướng gradient phải vuông góc với cạnh giấy
+        const align=Math.abs(gx[idx]*nx+gy[idx]*ny)/(m+1e-3);
+        // Kiểm tra bước nhảy mặt nạ (trong = 1, ngoài = 0)
+        const ix=Math.min(w-1,Math.max(0,Math.round(px-nx*2))),iy=Math.min(h-1,Math.max(0,Math.round(py-ny*2)));
+        const ox=Math.min(w-1,Math.max(0,Math.round(px+nx*2))),oy=Math.min(h-1,Math.max(0,Math.round(py+ny*2)));
+        const stepBonus=(mask&&mask[iy*w+ix]&&!mask[oy*w+ox])?25:0;
+        const sc=(m*align+stepBonus)*(1-0.04*Math.abs(r));
+        if(sc>bestScore){bestScore=sc;bestR=r}
+      }
+      if(bestScore>6)pts.push([bx+nx*bestR,by+ny*bestR]);
+    }
+    lines.push(fitRobustLine(pts));
+  }
+  const R=[
+    intersectLines(lines[3],lines[0],Q[0]),
+    intersectLines(lines[0],lines[1],Q[1]),
+    intersectLines(lines[1],lines[2],Q[2]),
+    intersectLines(lines[2],lines[3],Q[3])
+  ];
+  return R;
+}
+
+// Kiểm tra tính hợp lệ hình học của tứ giác phối cảnh
+function isValidQuad(Q,w,h){
+  if(!Q||Q.length!==4)return false;
+  const pad=Math.max(w,h)*0.08;
+  for(const[x,y]of Q)if(!Number.isFinite(x)||!Number.isFinite(y)||x<-pad||y<-pad||x>w+pad||y>h+pad)return false;
+  let area2=0;
+  for(let i=0;i<4;i++){
+    const a=Q[i],b=Q[(i+1)%4],c=Q[(i+2)%4];
+    const cross=(b[0]-a[0])*(c[1]-b[1])-(b[1]-a[1])*(c[0]-b[0]);
+    if(cross<=0)return false; // Phải lồi chặt theo chiều kim đồng hồ
+    const l1=dist(a,b),l2=dist(b,c);
+    if(l1<Math.min(w,h)*0.14)return false;
+    const cos=((b[0]-a[0])*(c[0]-b[0])+(b[1]-a[1])*(c[1]-b[1]))/(l1*l2+1e-6);
+    const ang=Math.acos(Math.max(-1,Math.min(1,-cos)))*180/Math.PI;
+    if(ang<48||ang>136)return false; // Góc tứ giác phải hợp lý (48°..136°)
+    area2+=a[0]*b[1]-b[0]*a[1];
+  }
+  const area=Math.abs(area2)*0.5,tot=w*h;
+  if(area<tot*0.12||area>tot*0.97)return false;
+  const d0=dist(Q[0],Q[1]),d2=dist(Q[2],Q[3]),d1=dist(Q[1],Q[2]),d3=dist(Q[3],Q[0]);
+  if(Math.max(d0,d2)/Math.min(d0,d2)>2.4||Math.max(d1,d3)/Math.min(d1,d3)>2.4)return false;
+  return true;
+}
+
+// Hàm chấm điểm chất lượng tứ giác (kết hợp Năng lượng biên Sobel + Độ tương phản trong/ngoài + Độ phủ biên)
+function scoreQuad(Q,closedL,mag,gx,gy,w,h){
+  if(!isValidQuad(Q,w,h))return -1e9;
+  let edgeSum=0,contrastSum=0,supportCnt=0,totalSamples=0;
+  for(let k=0;k<4;k++){
+    const A=Q[k],B=Q[(k+1)%4],len=dist(A,B);
+    const nx=(B[1]-A[1])/len,ny=-(B[0]-A[0])/len;
+    const S=48;
+    for(let s=3;s<S-3;s++){
+      const t=s/S,x=A[0]+(B[0]-A[0])*t,y=A[1]+(B[1]-A[1])*t;
+      const xi=Math.round(x),yi=Math.round(y);
+      if(xi<2||yi<2||xi>=w-2||yi>=h-2)continue;
+      totalSamples++;
+      // Tìm đỉnh gradient trong lân cận +-2px
+      let bestM=0;
+      for(let r=-2;r<=2;r++){
+        const px=Math.min(w-1,Math.max(0,Math.round(x+nx*r))),py=Math.min(h-1,Math.max(0,Math.round(y+ny*r)));
+        const idx=py*w+px,m=mag[idx];
+        const align=Math.abs(gx[idx]*nx+gy[idx]*ny)/(m+1e-3);
+        if(m*align>bestM)bestM=m*align;
+      }
+      edgeSum+=Math.min(80,bestM);
+      if(bestM>10)supportCnt++;
+      // So sánh độ sáng bên trong mép giấy (3px) và bên ngoài mép giấy (3px)
+      const ix=Math.min(w-1,Math.max(0,Math.round(x-nx*3))),iy=Math.min(h-1,Math.max(0,Math.round(y-ny*3)));
+      const ox=Math.min(w-1,Math.max(0,Math.round(x+nx*3))),oy=Math.min(h-1,Math.max(0,Math.round(y+ny*3)));
+      const diff=closedL[iy*w+ix]-closedL[oy*w+ox];
+      contrastSum+=Math.max(-30,Math.min(70,diff));
+    }
+  }
+  if(totalSamples<40)return -1e9;
+  const coverage=supportCnt/totalSamples;
+  if(coverage<0.32)return -1e9;
+  let area=0;for(let i=0;i<4;i++){const a=Q[i],b=Q[(i+1)%4];area+=a[0]*b[1]-b[0]*a[1]}
+  area=Math.abs(area)*0.5/(w*h);
+  return (edgeSum/totalSamples)*1.8+(contrastSum/totalSamples)*1.1+coverage*45+Math.min(0.75,area)*22;
+}
+
+// Trích xuất tứ giác từ mặt nạ nhị phân
+function maskToQuadCandidate(rawMask,mag,gx,gy,w,h){
+  const{mask,area}=cleanMask(rawMask,w,h);
+  if(area<w*h*0.10||area>w*h*0.96)return null;
+  const bnd=[];
+  for(let y=1;y<h-1;y++){
+    const row=y*w;
+    for(let x=1;x<w-1;x++){
+      const i=row+x;
+      if(mask[i]&&(!mask[i-1]||!mask[i+1]||!mask[i-w]||!mask[i+w]))bnd.push([x,y]);
+    }
+  }
+  if(bnd.length<30)return null;
+  const H=convexHull(bnd);
+  const Q0=hullToMaxQuad(H);
+  if(!Q0)return null;
+  const Q1=refineQuadByEdges(Q0,mask,mag,gx,gy,w,h);
+  return{Q0,Q1,mask};
+}
+
+// Ứng viên thứ 4: Dò trực tiếp 4 đường biên Gradient mạnh nhất (Dành cho giấy trắng đặt trên mặt bàn trắng)
+function directEdgeQuadCandidate(mag,gx,gy,w,h){
+  const cx=w*0.5,cy=h*0.5;
+  const zones=[[],[],[],[]]; // Top, Right, Bottom, Left
+  const vals=[];
+  for(let i=0;i<mag.length;i++)if(mag[i]>8)vals.push(mag[i]);
+  if(vals.length<100)return null;
+  vals.sort((a,b)=>a-b);
+  const th=vals[Math.floor(vals.length*0.78)];
+  for(let y=6;y<h-6;y++){
+    for(let x=6;x<w-6;x++){
+      const i=y*w+x,m=mag[i];if(m<th)continue;
+      const dx=x-cx,dy=y-cy;
+      if(Math.abs(dy)>Math.abs(dx)*0.7){
+        if(dy<-h*0.08&&Math.abs(gy[i])>Math.abs(gx[i])*1.1)zones[0].push([x,y,m]);
+        else if(dy>h*0.08&&Math.abs(gy[i])>Math.abs(gx[i])*1.1)zones[2].push([x,y,m]);
+      }
+      if(Math.abs(dx)>Math.abs(dy)*0.7){
+        if(dx>w*0.08&&Math.abs(gx[i])>Math.abs(gy[i])*1.1)zones[1].push([x,y,m]);
+        else if(dx<-w*0.08&&Math.abs(gx[i])>Math.abs(gy[i])*1.1)zones[3].push([x,y,m]);
+      }
+    }
+  }
+  const lines=[];
+  for(let z=0;z<4;z++){
+    const P=zones[z];if(P.length<15)return null;
+    let bestL=null,bestIn=-1;
+    // RANSAC tìm đường biên thẳng có tổng trọng số gradient lớn nhất
+    for(let it=0;it<45;it++){
+      const p1=P[(it*17)%P.length],p2=P[(it*53+11)%P.length];
+      const d=Math.hypot(p2[0]-p1[0],p2[1]-p1[1]);
+      if(d<Math.min(w,h)*0.18)continue;
+      const a=(p1[1]-p2[1])/d,b=(p2[0]-p1[0])/d,c=-(a*p1[0]+b*p1[1]);
+      let inliers=0;
+      for(let k=0;k<P.length;k++){if(Math.abs(a*P[k][0]+b*P[k][1]+c)<2.5)inliers+=P[k][2]}
+      if(inliers>bestIn){bestIn=inliers;bestL=[a,b,c]}
+    }
+    if(!bestL)return null;
+    const inPts=P.filter(p=>Math.abs(bestL[0]*p[0]+bestL[1]*p[1]+bestL[2])<3).map(p=>[p[0],p[1]]);
+    lines.push(fitRobustLine(inPts)||bestL);
+  }
+  const def=[[w*0.1,h*0.1],[w*0.9,h*0.1],[w*0.9,h*0.9],[w*0.1,h*0.9]];
+  return[
+    intersectLines(lines[3],lines[0],def[0]),
+    intersectLines(lines[0],lines[1],def[1]),
+    intersectLines(lines[1],lines[2],def[2]),
+    intersectLines(lines[2],lines[3],def[3])
+  ];
+}
+
+// Hàm tổng hợp: Tìm 4 góc giấy chính xác trên ảnh gốc
+function detectDocQuad(c){
+  const MAXD=360,sc=MAXD/Math.max(c.width,c.height);
+  const sw=Math.max(40,Math.round(c.width*sc)),sh=Math.max(40,Math.round(c.height*sc));
+  const s=mk(sw,sh),sx=s.getContext('2d');sx.drawImage(c,0,0,sw,sh);
+  const px=sx.getImageData(0,0,sw,sh).data,N=sw*sh;
+
+  // Tách 3 kênh: Độ sáng L, Độ lệch Đỏ Cr (bắt Sổ hồng/dấu đỏ), Độ lệch Vàng-Xanh Cb (bắt giấy cũ/bàn gỗ)
+  const L=new Float32Array(N),Cr=new Float32Array(N),Cb=new Float32Array(N);
+  for(let i=0;i<N;i++){
+    const r=px[i*4],g=px[i*4+1],b=px[i*4+2];
+    L[i]=(r*77+g*150+b*29)/256;
+    Cr[i]=r-g;
+    Cb[i]=b-(r+g)*0.5;
+  }
+
+  // Tầng 1: Đóng hình thái học (Morphological Closing) xóa sạch chữ đen & khung bảng bên trong tờ giấy
+  const closedL=blur(morphClose(L,sw,sh,4),sw,sh,2);
+  const smCr=blur(Cr,sw,sh,2),smCb=blur(Cb,sw,sh,2);
+
+  // Tầng 2: Tính Gradient Sobel đa kênh (L, Cr, Cb)
+  const mag=new Float32Array(N),gx=new Float32Array(N),gy=new Float32Array(N);
+  for(let y=1;y<sh-1;y++){
+    for(let x=1;x<sw-1;x++){
+      const i=y*sw+x;
+      const sxL=(closedL[i-sw+1]+2*closedL[i+1]+closedL[i+sw+1])-(closedL[i-sw-1]+2*closedL[i-1]+closedL[i+sw-1]);
+      const syL=(closedL[i+sw-1]+2*closedL[i+sw]+closedL[i+sw+1])-(closedL[i-sw-1]+2*closedL[i-sw]+closedL[i-sw+1]);
+      const sxR=((smCr[i-sw+1]+2*smCr[i+1]+smCr[i+sw+1])-(smCr[i-sw-1]+2*smCr[i-1]+smCr[i+sw-1]))*0.75;
+      const syR=((smCr[i+sw-1]+2*smCr[i+sw]+smCr[i+sw+1])-(smCr[i-sw-1]+2*smCr[i-sw]+smCr[i-sw+1]))*0.75;
+      const sxB=((smCb[i-sw+1]+2*smCb[i+1]+smCb[i+sw+1])-(smCb[i-sw-1]+2*smCb[i-1]+smCb[i+sw-1]))*0.75;
+      const syB=((smCb[i+sw-1]+2*smCb[i+sw]+smCb[i+sw+1])-(smCb[i-sw-1]+2*smCb[i-sw]+smCb[i-sw+1]))*0.75;
+      const mL=Math.hypot(sxL,syL),mR=Math.hypot(sxR,syR),mB=Math.hypot(sxB,syB);
+      if(mL>=mR&&mL>=mB){mag[i]=mL*0.25;gx[i]=sxL*0.25;gy[i]=syL*0.25}
+      else if(mR>=mB){mag[i]=mR*0.25;gx[i]=sxR*0.25;gy[i]=syR*0.25}
+      else{mag[i]=mB*0.25;gx[i]=sxB*0.25;gy[i]=syB*0.25}
+    }
+  }
+
+  // Tầng 3: Sinh 3 mặt nạ ứng viên đa giả thuyết
+  // Mask 1: Otsu trên ảnh đã đóng hình thái học (Chống chữ đen làm thủng giấy)
+  const t1=otsu(closedL),m1=new Uint8Array(N);
+  for(let i=0;i<N;i++)m1[i]=closedL[i]>t1?1:0;
+
+  // Mask 2: Khử bóng đổ cục bộ (Illumination-Normalized Otsu - Chống bóng người/điện thoại đổ lên trang giấy)
+  const illum=blur(closedL,sw,sh,Math.round(Math.min(sw,sh)*0.18));
+  const normL=new Float32Array(N);
+  for(let i=0;i<N;i++)normL[i]=Math.min(255,closedL[i]*0.65+(closedL[i]/Math.max(60,illum[i]))*195*0.35);
+  const t2=otsu(normL),m2=new Uint8Array(N);
+  for(let i=0;i<N;i++)m2[i]=normL[i]>t2?1:0;
+
+  // Mask 3: Khoảng cách màu & độ sáng so với viền nền (Chuyên trị Sổ đỏ/Sổ hồng hoặc bàn làm việc sáng màu)
+  let bgL=0,bgCr=0,bgCb=0,bgCnt=0;
+  for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){
+    if(x<4||x>=sw-4||y<4||y>=sh-4){const i=y*sw+x;bgL+=closedL[i];bgCr+=smCr[i];bgCb+=smCb[i];bgCnt++}
+  }
+  bgL/=bgCnt;bgCr/=bgCnt;bgCb/=bgCnt;
+  const distMap=new Float32Array(N);
+  for(let i=0;i<N;i++){
+    const dL=Math.max(0,closedL[i]-bgL)*1.3+Math.abs(closedL[i]-bgL)*0.4;
+    const dC=Math.hypot(smCr[i]-bgCr,smCb[i]-bgCb)*0.85;
+    distMap[i]=Math.min(255,dL+dC);
+  }
+  const t3=otsu(distMap),m3=new Uint8Array(N);
+  for(let i=0;i<N;i++)m3[i]=distMap[i]>Math.max(18,t3)?1:0;
+
+  // Thu thập tất cả các tứ giác ứng viên và chấm điểm
+  const candidates=[];
+  for(const m of[m1,m2,m3]){
+    const res=maskToQuadCandidate(m,mag,gx,gy,sw,sh);
+    if(res){candidates.push(res.Q0);candidates.push(res.Q1)}
+  }
+  const directQ=directEdgeQuadCandidate(mag,gx,gy,sw,sh);
+  if(directQ){
+    candidates.push(directQ);
+    candidates.push(refineQuadByEdges(directQ,null,mag,gx,gy,sw,sh));
+  }
+
+  let bestQ=null,bestScore=-1e9;
+  for(const q of candidates){
+    const scScore=scoreQuad(q,closedL,mag,gx,gy,sw,sh);
+    if(scScore>bestScore){bestScore=scScore;bestQ=q}
+  }
+
+  if(!bestQ||bestScore<18)return null;
+  return bestQ.map(p=>[
+    Math.max(0,Math.min(c.width,p[0]/sc)),
+    Math.max(0,Math.min(c.height,p[1]/sc))
+  ]);
+}
+
+// ---- 4. BIẾN ĐỔI PHỐI CẢNH (HOMOGRAPHY WARP) + KHÔI PHỤC TỶ LỆ THẬT + CẮT VIỀN ĐEN
+function warp(c,Q){
+  // Cắt lẹm viền 0.8% vào phía trong để triệt tiêu hoàn toàn viền bóng đen sát mép giấy
+  let cx=0,cy=0;for(const p of Q){cx+=p[0];cy+=p[1]}cx/=4;cy/=4;
+  const Qs=Q.map(p=>[p[0]+(cx-p[0])*0.008,p[1]+(cy-p[1])*0.008]);
+
+  const wTop=dist(Qs[0],Qs[1]),wBot=dist(Qs[3],Qs[2]);
+  const hLeft=dist(Qs[0],Qs[3]),hRight=dist(Qs[1],Qs[2]);
+  let W=Math.max(wTop,wBot),H=Math.max(hLeft,hRight);
+
+  // Bù tỷ lệ co ngắn phối cảnh 3D & chuẩn hóa nhẹ về khổ giấy hành chính A4 (1 : 1.4142) nếu độ lệch nằm trong ngưỡng phối cảnh
+  const foreshorten=Math.max(wTop/Math.max(1,wBot),wBot/Math.max(1,wTop),hLeft/Math.max(1,hRight),hRight/Math.max(1,hLeft));
+  if(foreshorten>1.04){
+    if(H>=W)H*=Math.min(1.18,Math.sqrt(foreshorten));
+    else W*=Math.min(1.18,Math.sqrt(foreshorten));
+  }
+  const ratio=Math.max(W,H)/Math.max(1,Math.min(W,H)),ISO_A4=Math.SQRT2;
+  if(Math.abs(ratio-ISO_A4)/ISO_A4<0.095){
+    if(H>=W)H=W*ISO_A4;else W=H*ISO_A4;
+  }
+  W=Math.max(10,Math.round(W));H=Math.max(10,Math.round(H));
+
+  const D=[[0,0],[W-1,0],[W-1,H-1],[0,H-1]],A=[];
+  for(let i=0;i<4;i++){const[x,y]=D[i],[X,Y]=Qs[i];A.push([x,y,1,0,0,0,-x*X,-y*X,X]);A.push([0,0,0,x,y,1,-x*Y,-y*Y,Y])}
+  for(let i=0;i<8;i++){
+    let p=i;for(let r=i+1;r<8;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;
+    [A[i],A[p]]=[A[p],A[i]];
+    const piv=A[i][i]||1e-12;
+    for(let r=0;r<8;r++)if(r!==i){const f=A[r][i]/piv;for(let k=i;k<9;k++)A[r][k]-=f*A[i][k]}
+  }
+  const k=A.map((r,i)=>r[8]/(r[i]||1e-12)),sw=c.width,sh=c.height,sd=c.getContext('2d').getImageData(0,0,sw,sh).data;
+  const o=mk(W,H),oc=o.getContext('2d'),od=oc.createImageData(W,H),dd=od.data;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const w=k[6]*x+k[7]*y+1,X=(k[0]*x+k[1]*y+k[2])/w,Y=(k[3]*x+k[4]*y+k[5])/w,x0=Math.floor(X),y0=Math.floor(Y),i=(y*W+x)*4;
+    dd[i+3]=255;if(x0<0||y0<0||x0>=sw-1||y0>=sh-1){dd[i]=dd[i+1]=dd[i+2]=255;continue}
+    const fx=X-x0,fy=Y-y0,p=(y0*sw+x0)*4,q=p+sw*4;
+    for(let ch=0;ch<3;ch++)dd[i+ch]=sd[p+ch]*(1-fx)*(1-fy)+sd[p+4+ch]*fx*(1-fy)+sd[q+ch]*(1-fx)*fy+sd[q+4+ch]*fx*fy;
+  }
+  oc.putImageData(od,0,0);return o;
+}
+
+function autoCrop(c){
+  const q=detectDocQuad(c);
+  return q?warp(c,q):copy(c);
+}
+
+// Làm rõ chữ, khử bóng đổ nền giấy và giữ nguyên màu đỏ tươi của con dấu
+function enhance(c,mode){
+  const w=c.width,h=c.height,ctx=c.getContext('2d'),im=ctx.getImageData(0,0,w,h),d=im.data,f=8,sw=Math.ceil(w/f),sh=Math.ceil(h/f),sm=new Float32Array(sw*sh),cn=new Float32Array(sw*sh);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=(y*w+x)*4,j=(y/f|0)*sw+(x/f|0);sm[j]+=(d[i]*77+d[i+1]*150+d[i+2]*29)/256;cn[j]++}
+  for(let j=0;j<sm.length;j++)sm[j]/=cn[j]||1;
+  const s=Math.min(w,h),bg=blur(sm,sw,sh,mode==='bw'?Math.max(2,Math.round(s/80*2/f)):Math.max(3,Math.round(s/10/f)));
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const i=(y*w+x)*4,b=bg[(y/f|0)*sw+(x/f|0)];
+    if(mode==='bw'){
+      const l=(d[i]*77+d[i+1]*150+d[i+2]*29)/256,v=l>b-11?255:0;
+      d[i]=d[i+1]=d[i+2]=v;
+    }else{
+      const g=255/Math.max(b,45);
+      const r0=d[i],g0=d[i+1],b0=d[i+2];
+      // Bảo toàn độ bão hòa của con dấu đỏ (khi R vượt trội G và B)
+      const isRedStamp=(r0-g0>28&&r0-b0>20);
+      for(let ch=0;ch<3;ch++){
+        let v=(d[i+ch]*g-128)*(isRedStamp?1.18:1.28)+134;
+        d[i+ch]=v<0?0:v>255?255:v;
+      }
+    }
+  }
+  ctx.putImageData(im,0,0);
+}
+
+// ---- 5. GIAO DIỆN & CHẾ ĐỘ CHỈNH TAY 4 GÓC KÈM KÍNH LÚP
+const setHint=t=>{$('#hint').textContent=t;$('#hint').hidden=false;$('#pv').hidden=true;$('#badge').hidden=true;$('#loupe').hidden=true};
+
+function defaultInsetQuad(c){
+  const mX=c.width*0.06,mY=c.height*0.06;
+  return[[mX,mY],[c.width-mX,mY],[c.width-mX,c.height-mY],[mX,c.height-mY]];
+}
+
+async function loadFile(f){
+  try{
+    const img=new Image();img.src=URL.createObjectURL(f);await img.decode();
+    const k=Math.min(1,MAXL/Math.max(img.naturalWidth,img.naturalHeight));
+    raw=mk(Math.round(img.naturalWidth*k),Math.round(img.naturalHeight*k));
+    raw.getContext('2d').drawImage(img,0,0,raw.width,raw.height);
+    URL.revokeObjectURL(img.src);
+    rot=0;editingQuad=false;
+    setHint('Đang dò mép giấy AI…');await new Promise(r=>setTimeout(r,25));
+    const q=detectDocQuad(raw);
+    if(q){curQuad=q;isAutoQuad=true}else{curQuad=defaultInsetQuad(raw);isAutoQuad=false}
+    render();
+  }catch(e){toast('Không đọc được ảnh')}
+}
+
+function drawQuadEditor(focusPt){
+  if(!raw||!curQuad)return;
+  const p=$('#pv');p.width=raw.width;p.height=raw.height;
+  const ctx=p.getContext('2d');
+  ctx.drawImage(raw,0,0);
+  // Lớp phủ tối bên ngoài vùng chọn
+  ctx.fillStyle='rgba(0,0,0,0.42)';
+  ctx.beginPath();ctx.rect(0,0,p.width,p.height);
+  ctx.moveTo(curQuad[0][0],curQuad[0][1]);
+  for(let i=3;i>=0;i--)ctx.lineTo(curQuad[i][0],curQuad[i][1]);
+  ctx.closePath();ctx.fill();
+
+  // Đường viền xanh lá nối 4 góc
+  const lw=Math.max(3,Math.round(Math.max(p.width,p.height)/240));
+  ctx.strokeStyle='#00e676';ctx.lineWidth=lw;
+  ctx.beginPath();
+  curQuad.forEach((pt,i)=>i?ctx.lineTo(pt[0],pt[1]):ctx.moveTo(pt[0],pt[1]));
+  ctx.closePath();ctx.stroke();
+
+  // 4 nút kéo góc
+  const rad=Math.max(14,Math.round(Math.max(p.width,p.height)/55));
+  curQuad.forEach(pt=>{
+    ctx.beginPath();ctx.arc(pt[0],pt[1],rad,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,230,118,0.28)';ctx.fill();
+    ctx.lineWidth=lw;ctx.strokeStyle='#fff';ctx.stroke();
+    ctx.beginPath();ctx.arc(pt[0],pt[1],Math.max(4,rad*0.25),0,Math.PI*2);
+    ctx.fillStyle='#00e676';ctx.fill();
+  });
+
+  // Hiển thị kính lúp phóng đại góc đang kéo
+  const lp=$('#loupe');
+  if(focusPt){
+    lp.hidden=false;
+    const lctx=lp.getContext('2d'),zoom=2.2,sz=96,half=sz/(2*zoom);
+    lctx.fillStyle='#111';lctx.fillRect(0,0,sz,sz);
+    lctx.drawImage(raw,focusPt[0]-half,focusPt[1]-half,half*2,half*2,0,0,sz,sz);
+    lctx.strokeStyle='#00e676';lctx.lineWidth=2;
+    lctx.beginPath();lctx.moveTo(sz/2-14,sz/2);lctx.lineTo(sz/2+14,sz/2);
+    lctx.moveTo(sz/2,sz/2-14);lctx.lineTo(sz/2,sz/2+14);lctx.stroke();
+  }else lp.hidden=true;
+}
+
+async function render(){
+  if(!raw)return;
+  if(editingQuad){
+    $('#pv').hidden=false;$('#hint').hidden=true;
+    $('#editQ').textContent='✓ Xong';$('#editQ').className='warn';
+    $('#badge').textContent='Kéo 4 chấm tròn vào đúng 4 góc giấy';$('#badge').hidden=false;
+    drawQuadEditor( null );return;
+  }
+  $('#editQ').textContent='📐 Góc';$('#editQ').className='';$('#loupe').hidden=true;
+  setHint('Đang xử lý ảnh…');await new Promise(r=>setTimeout(r,20));
+  try{
+    let c=($('#crop').checked&&curQuad&&(isAutoQuad||curQuad.manual))?warp(raw,curQuad):copy(raw);
+    for(let i=0;i<rot;i++)c=rot90(c);
+    enhance(c,$('#mode').value);proc=c;
+    const p=$('#pv');p.width=c.width;p.height=c.height;p.getContext('2d').drawImage(c,0,0);
+    p.hidden=false;$('#hint').hidden=true;
+    const b=$('#badge');
+    if($('#crop').checked){
+      b.textContent=curQuad?.manual?'✓ Đã cắt theo góc chỉnh tay':(isAutoQuad?'✓ Đã tự động cắt mép':'⚠ Giữ nguyên khung (bấm [📐 Góc] nếu cần)');
+      b.hidden=false;
+    }else b.hidden=true;
+    $('#save').disabled=$('#again').disabled=$('#rot').disabled=$('#editQ').disabled=false;
+    $('#save').textContent=retake!=null?`CẬP NHẬT TRANG ${retake+1}`:'LƯU ẢNH';
+  }catch(e){toast('Lỗi xử lý ảnh: '+e.message)}
+}
+
+// Sự kiện kéo thả 4 góc trên Canvas
+function canvasCoords(e){
+  const p=$('#pv'),r=p.getBoundingClientRect();
+  const cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+  const cy=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
+  return[Math.max(0,Math.min(p.width,cx*p.width/r.width)),Math.max(0,Math.min(p.height,cy*p.height/r.height))];
+}
+const pCanvas=$('#pv');
+pCanvas.addEventListener('pointerdown',e=>{
+  if(!editingQuad||!curQuad)return;
+  pCanvas.setPointerCapture(e.pointerId);
+  const pt=canvasCoords(e);
+  let bestI=-1,bestD=1e9;
+  curQuad.forEach((q,i)=>{const d=dist(pt,q);if(d<bestD){bestD=d;bestI=i}});
+  if(bestD<Math.max(raw.width,raw.height)*0.15){dragIdx=bestI;curQuad[dragIdx]=pt;curQuad.manual=true;drawQuadEditor(pt)}
+});
+pCanvas.addEventListener('pointermove',e=>{
+  if(!editingQuad||dragIdx<0)return;
+  const pt=canvasCoords(e);
+  // Đặt vị trí kính lúp tránh ngón tay
+  const r=pCanvas.getBoundingClientRect(),lx=e.clientX-r.left;
+  $('#loupe').style.left=lx<r.width*0.45?'auto':'8px';
+  $('#loupe').style.right=lx<r.width*0.45?'8px':'auto';
+  curQuad[dragIdx]=pt;curQuad.manual=true;drawQuadEditor(pt);
+});
+pCanvas.addEventListener('pointerup',()=>{if(dragIdx>=0){dragIdx=-1;curQuad=orderQuad(curQuad);curQuad.manual=true;drawQuadEditor(null)}});
+
+$('#editQ').onclick=()=>{
+  if(!raw)return;
+  editingQuad=!editingQuad;
+  if(editingQuad)$('#crop').checked=true;
+  render();
+};
+
+function gallery(){
+  urls.forEach(u=>URL.revokeObjectURL(u));urls=[];
+  $('#cnt').textContent=`Đã lưu: ${S.pages.length} trang`;
+  const g=$('#gal');g.innerHTML='';
+  S.pages.forEach((b,i)=>{
+    const u=URL.createObjectURL(b);urls.push(u);
+    const d=document.createElement('div');d.className='card';
+    d.innerHTML=`<small>Trang ${i+1}</small><img src="${u}"><div><button data-r="${i}">📷</button><button data-d="${i}">🗑</button></div>`;
+    g.append(d);
+  });
+}
+$('#gal').onclick=e=>{
+  const r=e.target.dataset.r,d=e.target.dataset.d;
+  if(r!=null){retake=+r;setHint(`Đang CHỤP LẠI Trang ${+r+1}…`);$('#cam').click()}
+  else if(d!=null){S.pages.splice(+d,1);if(retake===+d)retake=null;save();gallery();toast(`Đã xóa Trang ${+d+1}`)}
+};
+$('#cap').onclick=$('#again').onclick=()=>$('#cam').click();
+$('#pick').onclick=()=>$('#lib').click();
 for(const id of['cam','lib'])$('#'+id).onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)loadFile(f)};
-$('#crop').onchange=$('#mode').onchange=render;$('#rot').onclick=()=>{rot=(rot+1)%4;render()};
-$('#save').onclick=async()=>{if(!proc)return;const b=await new Promise(r=>proc.toBlob(r,'image/jpeg',.92));
- if(retake!=null){S.pages[retake]=b;toast(`Đã cập nhật Trang ${retake+1}`);retake=null}else{S.pages.push(b);toast(`Đã lưu Trang ${S.pages.length}`)}
- await save();raw=proc=null;setHint('Đã lưu! Nhấn [CHỤP ẢNH] để chụp trang tiếp theo.');$('#save').disabled=$('#again').disabled=$('#rot').disabled=true;$('#save').textContent='LƯU ẢNH';gallery()};
-$('#new').onclick=async()=>{if(!confirm('Xóa toàn bộ ảnh hiện tại để bắt đầu hồ sơ mới?'))return;S.pages=[];retake=null;raw=proc=null;await save();setHint('Đã tạo hồ sơ mới. Nhấn [CHỤP ẢNH] để bắt đầu.');gallery()};
-// ---- xuất PDF (tự ghép PDF, không cần thư viện)
+$('#crop').onchange=$('#mode').onchange=()=>{editingQuad=false;render()};
+$('#rot').onclick=()=>{editingQuad=false;rot=(rot+1)%4;render()};
+$('#save').onclick=async()=>{
+  if(editingQuad){editingQuad=false;await render()}
+  if(!proc)return;
+  const b=await new Promise(r=>proc.toBlob(r,'image/jpeg',.92));
+  if(retake!=null){S.pages[retake]=b;toast(`Đã cập nhật Trang ${retake+1}`);retake=null}
+  else{S.pages.push(b);toast(`Đã lưu Trang ${S.pages.length}`)}
+  await save();raw=proc=curQuad=null;editingQuad=false;
+  setHint('Đã lưu! Nhấn [CHỤP ẢNH] để chụp trang tiếp theo.');
+  $('#save').disabled=$('#again').disabled=$('#rot').disabled=$('#editQ').disabled=true;
+  $('#save').textContent='LƯU ẢNH';gallery();
+};
+$('#new').onclick=async()=>{
+  if(!confirm('Xóa toàn bộ ảnh hiện tại để bắt đầu hồ sơ mới?'))return;
+  S.pages=[];retake=null;raw=proc=curQuad=null;editingQuad=false;await save();
+  setHint('Đã tạo hồ sơ mới. Nhấn [CHỤP ẢNH] để bắt đầu.');
+  $('#save').disabled=$('#again').disabled=$('#rot').disabled=$('#editQ').disabled=true;gallery();
+};
+
+// ---- 6. XUẤT PDF (TỰ GHÉP BINARY PDF CHUẨN A4)
 const clean=v=>v.trim().replace(/[<>:"/\\|?*]/g,''),fname=()=>`CHUACOGIAY_${clean($('#f_ma').value)||'[MÃ HỒ SƠ]'}_${clean($('#f_to').value)||'[SỐ TỜ]'}_${clean($('#f_thua').value)||'[SỐ THỬA]'}.pdf`;
 const upd=()=>{$('#fn').textContent=fname();$('#res').hidden=true};
 for(const id of['f_ma','f_to','f_thua'])$('#'+id).oninput=upd;
 $('#exp').onclick=()=>{if(!S.pages.length)return toast('Hãy lưu ít nhất 1 trang trước khi xuất PDF!');$('#f_ma').value=S.ma||'26784';$('#f_to').value=S.to;$('#f_thua').value=S.thua;upd();$('#modal').hidden=false};
 $('#close').onclick=()=>$('#modal').hidden=true;
 const dims=b=>new Promise((ok,no)=>{const i=new Image(),u=URL.createObjectURL(b);i.onload=()=>{URL.revokeObjectURL(u);ok([i.naturalWidth,i.naturalHeight])};i.onerror=no;i.src=u});
-async function buildPdf(blobs){const enc=new TextEncoder(),parts=[],off=[];let pos=0;
- const put=u=>{if(typeof u==='string')u=enc.encode(u);parts.push(u);pos+=u.length},begin=n=>{off[n]=pos;put(`${n} 0 obj\n`)};
- put('%PDF-1.4\n');begin(1);put('<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
- begin(2);put(`<< /Type /Pages /Kids [${blobs.map((_,i)=>`${3+i*3} 0 R`).join(' ')}] /Count ${blobs.length} >>\nendobj\n`);
- for(let i=0;i<blobs.length;i++){const[w,h]=await dims(blobs[i]),by=new Uint8Array(await blobs[i].arrayBuffer()),land=w>h,PW=land?841.89:595.28,PH=land?595.28:841.89,mg=36*72/150,
-  sc=Math.min((PW-2*mg)/w,(PH-2*mg)/h),dw=w*sc,dh=h*sc,x=(PW-dw)/2,y=(PH-dh)/2,pg=3+i*3,ct=pg+1,im=pg+2,cs=`q ${dw.toFixed(2)} 0 0 ${dh.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm /Im0 Do Q`;
-  begin(pg);put(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /XObject << /Im0 ${im} 0 R >> >> /Contents ${ct} 0 R >>\nendobj\n`);
-  begin(ct);put(`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream\nendobj\n`);
-  begin(im);put(`<< /Type /XObject /Subtype /Image /Width ${w} /Height ${h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${by.length} >>\nstream\n`);put(by);put('\nendstream\nendobj\n')}
- const N=3+blobs.length*3,xr=pos;put(`xref\n0 ${N}\n0000000000 65535 f \n`);for(let n=1;n<N;n++)put(String(off[n]).padStart(10,'0')+' 00000 n \n');
- put(`trailer\n<< /Size ${N} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);return new Blob(parts,{type:'application/pdf'})}
-$('#go').onclick=async()=>{const ma=clean($('#f_ma').value),to=clean($('#f_to').value),th=clean($('#f_thua').value);
- if(!ma||!to||!th)return toast('Vui lòng nhập đầy đủ Mã hồ sơ, Số tờ và Số thửa!');
- S.ma=ma;S.to=to;S.thua=th;save();$('#go').disabled=true;$('#go').textContent='Đang tạo PDF…';
- try{pdf={blob:await buildPdf(S.pages),name:fname()};$('#res').hidden=false;$('#share').hidden=!(navigator.canShare&&navigator.canShare({files:[new File([pdf.blob],pdf.name,{type:'application/pdf'})]}));toast('Xuất PDF thành công!')}
- catch(e){toast('Xuất PDF thất bại: '+e.message)}$('#go').disabled=false;$('#go').textContent='XUẤT FILE PDF'};
+
+async function buildPdf(blobs){
+  const enc=new TextEncoder(),parts=[],off=[];let pos=0;
+  const put=u=>{if(typeof u==='string')u=enc.encode(u);parts.push(u);pos+=u.length},begin=n=>{off[n]=pos;put(`${n} 0 obj\n`)};
+  put('%PDF-1.4\n');begin(1);put('<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+  begin(2);put(`<< /Type /Pages /Kids [${blobs.map((_,i)=>`${3+i*3} 0 R`).join(' ')}] /Count ${blobs.length} >>\nendobj\n`);
+  for(let i=0;i<blobs.length;i++){
+    const[w,h]=await dims(blobs[i]),by=new Uint8Array(await blobs[i].arrayBuffer()),land=w>h,PW=land?841.89:595.28,PH=land?595.28:841.89,mg=14,
+      sc=Math.min((PW-2*mg)/w,(PH-2*mg)/h),dw=w*sc,dh=h*sc,x=(PW-dw)/2,y=(PH-dh)/2,pg=3+i*3,ct=pg+1,im=pg+2,cs=`q ${dw.toFixed(2)} 0 0 ${dh.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm /Im0 Do Q`;
+    begin(pg);put(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /XObject << /Im0 ${im} 0 R >> >> /Contents ${ct} 0 R >>\nendobj\n`);
+    begin(ct);put(`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream\nendobj\n`);
+    begin(im);put(`<< /Type /XObject /Subtype /Image /Width ${w} /Height ${h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${by.length} >>\nstream\n`);put(by);put('\nendstream\nendobj\n');
+  }
+  const N=3+blobs.length*3,xr=pos;put(`xref\n0 ${N}\n0000000000 65535 f \n`);for(let n=1;n<N;n++)put(String(off[n]).padStart(10,'0')+' 00000 n \n');
+  put(`trailer\n<< /Size ${N} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);return new Blob(parts,{type:'application/pdf'});
+}
+
+$('#go').onclick=async()=>{
+  const ma=clean($('#f_ma').value),to=clean($('#f_to').value),th=clean($('#f_thua').value);
+  if(!ma||!to||!th)return toast('Vui lòng nhập đầy đủ Mã hồ sơ, Số tờ và Số thửa!');
+  S.ma=ma;S.to=to;S.thua=th;save();$('#go').disabled=true;$('#go').textContent='Đang tạo PDF…';
+  try{
+    pdf={blob:await buildPdf(S.pages),name:fname()};$('#res').hidden=false;
+    $('#share').hidden=!(navigator.canShare&&navigator.canShare({files:[new File([pdf.blob],pdf.name,{type:'application/pdf'})]}));
+    toast('Xuất PDF thành công!');
+  }catch(e){toast('Xuất PDF thất bại: '+e.message)}
+  $('#go').disabled=false;$('#go').textContent='XUẤT FILE PDF';
+};
 $('#share').onclick=()=>navigator.share({files:[new File([pdf.blob],pdf.name,{type:'application/pdf'})],title:pdf.name}).catch(()=>{});
 $('#dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(pdf.blob);a.download=pdf.name;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)};
 (async()=>{try{const v=await kv('readonly',s=>s.get('s'));if(v)S=v}catch(e){}gallery()})();
