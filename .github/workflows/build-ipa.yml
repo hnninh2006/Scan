@@ -6,14 +6,18 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          run: pip install flet
+          python-version: '3.11'
+          
       - name: Install Flet
-        run: pip install flet==0.27.6
+        run: pip install flet
+        
       - name: Build IPA
         run: flet build ipa
+        
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
